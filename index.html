@@ -3,38 +3,61 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>6369 | Robot Strategy Worksheet 2026</title>
+<title>6369 | Robot Strategy 2026</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0d0f14;--bg2:#13161e;--bg3:#1a1e28;--border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);--accent:#e63a2e;--accent2:#ff6b5b;--gold:#f5a623;--text:#e8eaf0;--muted:#7a8099;--dim:#4a5068;--green:#2ecc71;--blue:#3a8ef5;--radius:6px;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;line-height:1.6;min-height:100vh;}
-#auth-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;}
+
+/* AUTH */
+#auth-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;}
 .auth-card{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:2.5rem;width:340px;text-align:center;}
 .auth-logo{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;margin-bottom:0.25rem;}
-.auth-logo span{background:var(--accent);color:#fff;padding:2px 8px;border-radius:3px;margin-right:8px;font-size:16px;}
+.auth-logo span{background:var(--accent);color:#fff;padding:2px 8px;border-radius:3px;margin-right:8px;}
 .auth-sub{color:var(--muted);font-size:13px;margin-bottom:2rem;}
-.google-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:#fff;color:#333;border:none;border-radius:6px;padding:12px 20px;font-size:14px;font-weight:600;cursor:pointer;transition:box-shadow 0.15s;}
-.google-btn:hover{box-shadow:0 2px 12px rgba(0,0,0,0.3);}
-.google-btn svg{width:20px;height:20px;flex-shrink:0;}
-.auth-note{color:var(--dim);font-size:11px;font-family:'IBM Plex Mono',monospace;margin-top:1rem;}
+.g-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:#fff;color:#333;border:none;border-radius:6px;padding:12px 20px;font-size:14px;font-weight:600;cursor:pointer;}
+.g-btn:hover{box-shadow:0 2px 12px rgba(0,0,0,0.3);}
+.g-btn svg{width:20px;height:20px;flex-shrink:0;}
+
+/* SHEET PICKER */
+#sheet-picker{display:none;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:1.5rem;}
+.picker-card{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:2rem;width:480px;}
+.picker-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;margin-bottom:0.25rem;}
+.picker-sub{color:var(--muted);font-size:13px;margin-bottom:1.5rem;}
+.sheet-list{display:flex;flex-direction:column;gap:8px;margin-bottom:1rem;max-height:320px;overflow-y:auto;}
+.sheet-item{display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px 14px;cursor:pointer;transition:border-color 0.15s;}
+.sheet-item:hover{border-color:var(--accent2);}
+.sheet-item.active{border-color:var(--accent);background:rgba(230,58,46,0.08);}
+.sheet-name{font-weight:500;flex:1;}
+.sheet-meta{font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace;}
+.sheet-del{background:none;border:none;color:var(--dim);cursor:pointer;font-size:13px;padding:2px 6px;}
+.sheet-del:hover{color:var(--accent2);}
+.new-sheet-row{display:flex;gap:8px;}
+.new-sheet-inp{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:'Barlow',sans-serif;font-size:13px;padding:8px 12px;}
+.new-sheet-inp:focus{outline:none;border-color:var(--accent);}
+.new-sheet-btn{background:var(--accent);color:#fff;border:none;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.06em;padding:8px 16px;cursor:pointer;white-space:nowrap;}
+.open-btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:0.06em;padding:11px;cursor:pointer;margin-top:0.5rem;}
+.open-btn:disabled{opacity:0.4;cursor:not-allowed;}
+.picker-signout{font-size:12px;color:var(--muted);cursor:pointer;font-family:'IBM Plex Mono',monospace;}
+.picker-signout:hover{color:var(--text);}
+
+/* APP */
 #app{display:none;}
 .site-header{background:var(--bg2);border-bottom:1px solid var(--border2);padding:0 1.5rem;display:flex;align-items:center;gap:1rem;height:60px;position:sticky;top:0;z-index:100;}
 .logo{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;display:flex;align-items:center;gap:8px;white-space:nowrap;}
 .logo-badge{background:var(--accent);color:#fff;font-size:11px;padding:2px 7px;border-radius:3px;font-weight:700;}
+.sheet-pill{background:var(--bg3);border:1px solid var(--border2);border-radius:100px;font-size:12px;color:var(--text);padding:4px 12px;font-family:'IBM Plex Mono',monospace;white-space:nowrap;overflow:hidden;max-width:180px;text-overflow:ellipsis;}
 .hdr-div{width:1px;height:28px;background:var(--border2);}
 .hdr-user{font-size:12px;color:var(--muted);font-family:'IBM Plex Mono',monospace;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.admin-badge{background:rgba(230,58,46,0.15);border:1px solid var(--accent);color:var(--accent2);font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 10px;border-radius:3px;display:none;align-items:center;gap:6px;white-space:nowrap;}
-.admin-badge.show{display:flex;}
-.adot{width:6px;height:6px;background:var(--accent2);border-radius:50%;animation:pulse 1.5s infinite;}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.live-dot{width:7px;height:7px;background:var(--green);border-radius:50%;flex-shrink:0;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
 .hdr-btn{background:none;border:1px solid var(--border2);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px;padding:5px 10px;border-radius:4px;cursor:pointer;white-space:nowrap;}
 .hdr-btn:hover{border-color:var(--accent);color:var(--accent2);}
-.admin-bar{background:rgba(230,58,46,0.07);border-bottom:1px solid rgba(230,58,46,0.2);padding:8px 1.5rem;display:none;align-items:center;gap:1rem;flex-wrap:wrap;}
-.admin-bar.show{display:flex;}
-.admin-bar label{font-size:12px;color:var(--accent2);font-family:'IBM Plex Mono',monospace;}
-.user-sel{background:var(--bg3);border:1px solid rgba(230,58,46,0.3);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:12px;padding:4px 10px;border-radius:4px;cursor:pointer;}
+.admin-tag{background:rgba(230,58,46,0.15);border:1px solid var(--accent);color:var(--accent2);font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 9px;border-radius:3px;white-space:nowrap;}
+
+/* TABS */
 .tab-nav{background:var(--bg2);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;scrollbar-width:none;padding:0 1.5rem;}
 .tab-nav::-webkit-scrollbar{display:none;}
 .tab-btn{padding:13px 15px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;transition:color 0.15s,border-color 0.15s;}
@@ -42,10 +65,14 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .tab-btn.active{color:var(--accent2);border-bottom-color:var(--accent);}
 .tab-content{display:none;padding:1.5rem;max-width:1100px;margin:0 auto;}
 .tab-content.active{display:block;}
+
+/* SECTION */
 .sec-hdr{display:flex;align-items:flex-start;gap:10px;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid var(--border);}
 .sec-tag{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--accent2);background:rgba(230,58,46,0.12);padding:3px 8px;border-radius:3px;letter-spacing:0.08em;white-space:nowrap;margin-top:4px;}
 .sec-title{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:700;}
 .sec-desc{color:var(--muted);font-size:13px;margin-top:3px;}
+
+/* CARDS */
 .card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem 1.5rem;margin-bottom:1rem;}
 .ctitle{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent2);margin-bottom:0.75rem;display:flex;align-items:center;gap:8px;}
 .ctitle::before{content:'';display:inline-block;width:3px;height:13px;background:var(--accent);border-radius:2px;flex-shrink:0;}
@@ -53,17 +80,23 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
 @media(max-width:700px){.grid2,.grid3{grid-template-columns:1fr;}.tab-content{padding:1rem;}}
 .phase-lbl{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);background:rgba(245,166,35,0.1);padding:4px 10px;border-radius:3px;display:inline-block;margin:1.25rem 0 0.75rem;}
+
+/* CHECKLIST */
 .checklist{list-style:none;}
-.checklist li{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.checklist li{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;}
 .checklist li:last-child{border-bottom:none;}
-.chk{width:18px;height:18px;border-radius:3px;border:1px solid var(--border2);background:var(--bg3);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--green);cursor:pointer;}
+.chk{width:18px;height:18px;border-radius:3px;border:1px solid var(--border2);background:var(--bg3);flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--green);cursor:pointer;}
 .chk.done{background:rgba(46,204,113,0.1);border-color:var(--green);}
 .chk-lbl{flex:1;line-height:1.4;}
 .chk-lbl.done{color:var(--muted);text-decoration:line-through;}
+
+/* TABLE */
 .dtbl{width:100%;border-collapse:collapse;font-size:13px;}
 .dtbl th{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;padding:8px 10px;text-align:left;border-bottom:1px solid var(--border2);}
-.dtbl td{padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle;}
+.dtbl td{padding:6px 10px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle;}
 .dtbl tr:last-child td{border-bottom:none;}
+
+/* FORM ELEMENTS */
 .fsel{background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:'Barlow',sans-serif;font-size:12px;padding:4px 7px;width:100%;cursor:pointer;}
 .fsel:focus{outline:none;border-color:var(--accent);}
 .fsel option{background:var(--bg2);}
@@ -71,14 +104,20 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .finp:focus{outline:none;border-color:var(--accent);}
 .ftxt{background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:'Barlow',sans-serif;font-size:13px;padding:5px 8px;width:100%;resize:vertical;min-height:54px;line-height:1.5;}
 .ftxt:focus{outline:none;border-color:var(--accent);}
+
+/* NOTES */
 .notes-sec{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem 1.5rem;margin-top:1.5rem;}
 .notes-ttl{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem;}
 .notes-area{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:'Barlow',sans-serif;font-size:13px;padding:10px 12px;resize:vertical;min-height:70px;line-height:1.6;}
 .notes-area:focus{outline:none;border-color:var(--accent);}
+
+/* ADD / DEL */
 .add-btn{background:none;border:1px dashed var(--dim);border-radius:4px;color:var(--dim);font-size:12px;font-family:'IBM Plex Mono',monospace;padding:5px 12px;cursor:pointer;margin-top:6px;width:100%;text-align:center;transition:all 0.15s;}
 .add-btn:hover{border-color:var(--accent2);color:var(--accent2);}
-.del-btn{background:none;border:none;color:var(--dim);cursor:pointer;font-size:12px;padding:2px 5px;border-radius:3px;}
+.del-btn{background:none;border:none;color:var(--dim);cursor:pointer;font-size:12px;padding:2px 5px;border-radius:3px;flex-shrink:0;}
 .del-btn:hover{color:var(--accent2);}
+
+/* SWOT */
 .swot-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:0.75rem;}
 .swot-cell{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;}
 .swot-lbl{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.5rem;}
@@ -86,74 +125,117 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .swot-cell.W .swot-lbl{color:var(--accent2);}
 .swot-cell.O .swot-lbl{color:var(--blue);}
 .swot-cell.T .swot-lbl{color:var(--gold);}
+
+/* CPM */
 .cpm-stat{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;text-align:center;}
-.cpm-val{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:700;color:var(--accent2);}
+.cpm-val{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;color:var(--accent2);}
 .cpm-lbl{font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-top:2px;}
-.mx-row{display:flex;align-items:center;gap:1rem;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px;}
+
+/* MATRIX */
+.mx-row{display:flex;align-items:center;gap:1rem;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px;flex-wrap:wrap;}
 .mx-row:last-child{border-bottom:none;}
-.mx-label{flex:2;color:var(--text);}
+.mx-label{flex:2;min-width:140px;}
 .mx-scores{display:flex;gap:5px;flex-shrink:0;}
 .mx-box{text-align:center;}
 .mx-box label{font-size:10px;color:var(--dim);font-family:'IBM Plex Mono',monospace;display:block;margin-bottom:1px;}
-.mx-inp{width:44px;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--gold);font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:700;padding:3px;text-align:center;}
+.mx-inp{width:42px;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--gold);font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:700;padding:3px;text-align:center;}
 .mx-inp:focus{outline:none;border-color:var(--accent);}
 .mx-inp.c{color:var(--blue);border-color:rgba(58,142,245,0.3);background:rgba(58,142,245,0.05);}
-.mx-desc{flex:3;color:var(--muted);font-size:12px;}
+.mx-desc{flex:3;min-width:100px;}
 .mx-totals{display:flex;justify-content:flex-end;gap:1.5rem;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);}
 .tot-col{text-align:center;}
 .tot-lbl{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--muted);}
 .tot-val{font-size:22px;font-weight:700;color:var(--gold);}
 .tot-val.c{color:var(--blue);}
+
+/* WORK GROUPS */
+.pool{display:flex;flex-wrap:wrap;gap:5px;padding:8px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;min-height:40px;}
+.s-chip{display:inline-flex;align-items:center;gap:4px;background:var(--bg2);border:1px solid var(--border2);border-radius:100px;padding:3px 10px;font-size:12px;}
+.m-tag{display:inline-flex;align-items:center;gap:4px;background:rgba(58,142,245,0.1);border:1px solid rgba(58,142,245,0.3);border-radius:100px;padding:2px 8px;font-size:11px;color:var(--blue);margin:2px;}
+.m-rm{cursor:pointer;color:var(--dim);font-size:10px;}
+.m-rm:hover{color:var(--accent2);}
+.s-add-row{display:flex;gap:6px;margin-top:6px;}
+.s-inp{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:'Barlow',sans-serif;font-size:12px;padding:5px 8px;}
+.s-inp:focus{outline:none;border-color:var(--accent);}
+.sm-btn{background:none;border:1px solid var(--border2);color:var(--muted);font-size:11px;padding:4px 10px;border-radius:4px;cursor:pointer;}
+.sm-btn:hover{border-color:var(--accent2);color:var(--accent2);}
+
+/* ADMIN PANEL */
+.role-row{display:flex;align-items:center;gap:1rem;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.role-row:last-child{border-bottom:none;}
+.role-email{flex:1;font-family:'IBM Plex Mono',monospace;font-size:12px;}
+.role-badge{font-family:'IBM Plex Mono',monospace;font-size:11px;padding:2px 8px;border-radius:3px;}
+.role-badge.admin{background:rgba(230,58,46,0.15);color:var(--accent2);}
+.role-badge.member{background:rgba(122,128,153,0.15);color:var(--muted);}
+.role-act-btn{background:none;border:1px solid var(--border2);color:var(--muted);font-size:11px;font-family:'IBM Plex Mono',monospace;padding:4px 10px;border-radius:4px;cursor:pointer;}
+.role-act-btn:hover{border-color:var(--accent2);color:var(--accent2);}
+
+/* INFO */
 .info-box{background:rgba(58,142,245,0.08);border:1px solid rgba(58,142,245,0.2);border-radius:var(--radius);padding:0.75rem 1rem;font-size:13px;color:var(--blue);margin-bottom:1rem;}
 .rl-block{background:var(--bg2);border-left:3px solid var(--accent);border-radius:0 var(--radius) var(--radius) 0;padding:1rem 1.5rem;margin-bottom:1rem;}
 .rl-head{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent2);margin-bottom:0.4rem;}
 .rl-list{list-style:none;}
 .rl-list li{padding:3px 0 3px 1rem;font-size:13px;color:var(--muted);position:relative;}
 .rl-list li::before{content:'→';position:absolute;left:0;color:var(--dim);font-size:11px;top:5px;}
-.pool{display:flex;flex-wrap:wrap;gap:5px;padding:8px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;min-height:40px;}
-.s-chip{display:inline-flex;align-items:center;gap:4px;background:var(--bg2);border:1px solid var(--border2);border-radius:100px;padding:3px 10px;font-size:12px;cursor:pointer;transition:all 0.15s;}
-.s-chip:hover{border-color:var(--blue);color:var(--blue);}
-.m-tag{display:inline-flex;align-items:center;gap:4px;background:rgba(58,142,245,0.1);border:1px solid rgba(58,142,245,0.3);border-radius:100px;padding:2px 8px;font-size:11px;color:var(--blue);margin:2px;}
-.m-tag .rm{cursor:pointer;color:var(--dim);font-size:10px;}
-.m-tag .rm:hover{color:var(--accent2);}
-.s-add-row{display:flex;gap:6px;margin-top:6px;}
-.s-inp{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:'Barlow',sans-serif;font-size:12px;padding:5px 8px;}
-.s-inp:focus{outline:none;border-color:var(--accent);}
-.sm-btn{background:none;border:1px solid var(--border2);color:var(--muted);font-size:11px;padding:4px 10px;border-radius:4px;cursor:pointer;}
-.sm-btn:hover{border-color:var(--accent2);color:var(--accent2);}
-.save-toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--green);color:#0a2a15;font-family:'IBM Plex Mono',monospace;font-size:12px;padding:8px 16px;border-radius:4px;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none;}
-.save-toast.show{opacity:1;}
+
+/* TOAST */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;font-family:'IBM Plex Mono',monospace;font-size:12px;padding:8px 16px;border-radius:4px;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none;}
+.toast.saved{background:var(--green);color:#0a2a15;}
+.toast.live{background:rgba(58,142,245,0.9);color:#fff;}
+.toast.show{opacity:1;}
+
+/* COLLAB INDICATOR */
+.collab-bar{background:rgba(58,142,245,0.07);border-bottom:1px solid rgba(58,142,245,0.15);padding:5px 1.5rem;font-size:11px;color:var(--blue);font-family:'IBM Plex Mono',monospace;display:none;align-items:center;gap:8px;}
+.collab-bar.show{display:flex;}
+
 .loading-msg{display:flex;align-items:center;justify-content:center;height:150px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:13px;}
 </style>
 </head>
 <body>
 
+<!-- AUTH -->
 <div id="auth-screen">
   <div class="auth-card">
     <div class="auth-logo"><span>6369</span>MERCENARY ROBOTICS</div>
     <div class="auth-sub">Robot Strategy Worksheet · 2026</div>
-    <button class="google-btn" onclick="signInGoogle()">
+    <button class="g-btn" onclick="signInGoogle()">
       <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
       Sign in with Google
     </button>
-    <div class="auth-note">Your worksheet is private to your account</div>
   </div>
 </div>
 
+<!-- SHEET PICKER -->
+<div id="sheet-picker">
+  <div class="picker-card">
+    <div class="picker-title">Select a Strategy Sheet</div>
+    <div class="picker-sub">Sheets are shared and editable by everyone in real time.</div>
+    <div class="sheet-list" id="sheet-list"><div class="loading-msg">Loading sheets...</div></div>
+    <div class="new-sheet-row">
+      <input class="new-sheet-inp" id="new-sheet-name" placeholder="New sheet name (e.g. Week 1 Regional)..." onkeydown="if(event.key==='Enter')createSheet()">
+      <button class="new-sheet-btn" onclick="createSheet()">+ Create</button>
+    </div>
+    <button class="open-btn" id="open-btn" onclick="openSheet()" disabled>Open Selected Sheet</button>
+  </div>
+  <span class="picker-signout" onclick="signOut()">Sign out ({{email}})</span>
+</div>
+
+<!-- APP -->
 <div id="app">
   <header class="site-header">
     <div class="logo"><span class="logo-badge">6369</span>MERCENARY ROBOTICS</div>
+    <div class="sheet-pill" id="sheet-pill">—</div>
     <div class="hdr-div"></div>
+    <span class="live-dot" title="Live updates active"></span>
     <div class="hdr-user" id="hdr-email"></div>
-    <div class="admin-badge" id="admin-badge"><span class="adot"></span>ADMIN</div>
+    <span class="admin-tag" id="admin-tag" style="display:none;">ADMIN</span>
+    <button class="hdr-btn" onclick="backToPicker()">⬅ Sheets</button>
     <button class="hdr-btn" onclick="signOut()">Sign Out</button>
   </header>
-  <div class="admin-bar" id="admin-bar">
-    <label>Viewing:</label>
-    <select class="user-sel" id="user-sel" onchange="switchUser(this.value)"><option value="">All users...</option></select>
-    <span style="font-size:11px;color:var(--dim);font-family:'IBM Plex Mono',monospace;" id="admin-viewing"></span>
+  <div class="collab-bar" id="collab-bar">
+    <span>↻</span><span id="collab-msg">Another user just updated this sheet</span>
   </div>
-  <nav class="tab-nav">
+  <nav class="tab-nav" id="tab-nav">
     <button class="tab-btn active" onclick="showTab('readme',this)">README</button>
     <button class="tab-btn" onclick="showTab('plan',this)">The Plan</button>
     <button class="tab-btn" onclick="showTab('wg',this)">Work Groups</button>
@@ -163,422 +245,580 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
     <button class="tab-btn" onclick="showTab('specs',this)">Robot Specs</button>
     <button class="tab-btn" onclick="showTab('proto',this)">Prototype</button>
     <button class="tab-btn" onclick="showTab('eval',this)">Eval Concepts</button>
+    <button class="tab-btn" id="admin-tab-btn" style="display:none;" onclick="showTab('admin',this)">Admin Panel</button>
   </nav>
 
   <div id="tab-readme" class="tab-content active">
     <div class="sec-hdr"><div class="sec-tag">OVERVIEW</div><div><div class="sec-title">Strategy &amp; Design Worksheet</div><div class="sec-desc">Kickoff document · 6369 / 6773 · Season 2026</div></div></div>
     <div class="rl-block"><div class="rl-head">Purpose</div><ul class="rl-list"><li>Serves as the kickoff document for the engineering notebook</li><li>Gives Captains a tool to organize the efforts of a large FRC team</li><li>Creates a process that incorporates lessons learned</li><li>Facilitates communication between coaches, mentors, student leaders and team members</li><li>Ensures teams follow a top-down design methodology</li></ul></div>
     <div class="rl-block"><div class="rl-head">Objectives</div><ul class="rl-list"><li>Follow the engineering design process</li><li>Analyze game play strategies as one team (Define → Research phase)</li><li>Independently develop robot specs and share concepts</li><li>Prototype together and share findings</li><li>Evaluate and select separate design concepts</li></ul></div>
-    <div class="rl-block"><div class="rl-head">Instructions</div><ul class="rl-list"><li>Use worksheet as a task guide — fill in the blanks as you go</li><li>Use separate worksheets for each team, sharing game rules and strat analysis results</li><li>Adjust as needed. Not all tools need to be used.</li><li>Fill in lessons learned throughout the season</li></ul></div>
+    <div class="rl-block"><div class="rl-head">Instructions</div><ul class="rl-list"><li>Use worksheet as a task guide — fill in the blanks as you go</li><li>All changes save and sync to all users automatically</li><li>Not all tools need to be used; add or skip as needed</li><li>Fill in lessons learned throughout the season</li></ul></div>
     <div class="grid3" style="margin-top:1.5rem;">
       <div class="card" style="text-align:center;"><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:4px;">TEAMS</div><div style="font-size:24px;font-weight:700;color:var(--accent2);">6369 / 6773</div></div>
       <div class="card" style="text-align:center;"><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:4px;">SEASON</div><div style="font-size:24px;font-weight:700;color:var(--gold);">2026</div></div>
       <div class="card" style="text-align:center;"><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:4px;">METHOD</div><div style="font-size:14px;font-weight:600;color:var(--blue);padding-top:5px;">Top-Down Design</div></div>
     </div>
   </div>
-
-  <div id="tab-plan" class="tab-content"><div id="plan-body"><div class="loading-msg">Loading...</div></div><div class="notes-sec"><div class="notes-ttl">Notes</div><textarea class="notes-area" id="n-plan" placeholder="Notes for The Plan..." oninput="as()"></textarea></div></div>
+  <div id="tab-plan" class="tab-content"><div id="plan-body"><div class="loading-msg">Loading...</div></div><div class="notes-sec"><div class="notes-ttl">Notes</div><textarea class="notes-area" id="n-plan" placeholder="Notes for The Plan..." oninput="sectionChanged('plan')"></textarea></div></div>
   <div id="tab-wg" class="tab-content"><div id="wg-body"><div class="loading-msg">Loading...</div></div></div>
-  <div id="tab-gr" class="tab-content"><div id="gr-body"><div class="loading-msg">Loading...</div></div><div class="notes-sec"><div class="notes-ttl">Notes</div><textarea class="notes-area" id="n-gr" placeholder="Notes for Game Rules..." oninput="as()"></textarea></div></div>
-  <div id="tab-cpm" class="tab-content"><div id="cpm-body"><div class="loading-msg">Loading...</div></div><div class="notes-sec"><div class="notes-ttl">Notes</div><textarea class="notes-area" id="n-cpm" placeholder="Notes for CPM Analysis..." oninput="as()"></textarea></div></div>
-  <div id="tab-strat" class="tab-content"><div id="strat-body"><div class="loading-msg">Loading...</div></div><div class="notes-sec"><div class="notes-ttl">Notes</div><textarea class="notes-area" id="n-strat" placeholder="Notes for Strategy..." oninput="as()"></textarea></div></div>
-  <div id="tab-specs" class="tab-content"><div id="specs-body"><div class="loading-msg">Loading...</div></div><div class="notes-sec"><div class="notes-ttl">Notes</div><textarea class="notes-area" id="n-specs" placeholder="Notes for Robot Specs..." oninput="as()"></textarea></div></div>
-  <div id="tab-proto" class="tab-content"><div id="proto-body"><div class="loading-msg">Loading...</div></div><div class="notes-sec"><div class="notes-ttl">Notes</div><textarea class="notes-area" id="n-proto" placeholder="Notes for Prototyping..." oninput="as()"></textarea></div></div>
-  <div id="tab-eval" class="tab-content"><div id="eval-body"><div class="loading-msg">Loading...</div></div><div class="notes-sec"><div class="notes-ttl">Notes</div><textarea class="notes-area" id="n-eval" placeholder="Notes for Concept Evaluation..." oninput="as()"></textarea></div></div>
+  <div id="tab-gr" class="tab-content"><div id="gr-body"><div class="loading-msg">Loading...</div></div><div class="notes-sec"><div class="notes-ttl">Notes</div><textarea class="notes-area" id="n-gr" placeholder="Notes for Game Rules..." oninput="sectionChanged('gr')"></textarea></div></div>
+  <div id="tab-cpm" class="tab-content"><div id="cpm-body"><div class="loading-msg">Loading...</div></div><div class="notes-sec"><div class="notes-ttl">Notes</div><textarea class="notes-area" id="n-cpm" placeholder="Notes for CPM Analysis..." oninput="sectionChanged('cpm')"></textarea></div></div>
+  <div id="tab-strat" class="tab-content"><div id="strat-body"><div class="loading-msg">Loading...</div></div><div class="notes-sec"><div class="notes-ttl">Notes</div><textarea class="notes-area" id="n-strat" placeholder="Notes for Strategy..." oninput="sectionChanged('strat')"></textarea></div></div>
+  <div id="tab-specs" class="tab-content"><div id="specs-body"><div class="loading-msg">Loading...</div></div><div class="notes-sec"><div class="notes-ttl">Notes</div><textarea class="notes-area" id="n-specs" placeholder="Notes for Robot Specs..." oninput="sectionChanged('specs')"></textarea></div></div>
+  <div id="tab-proto" class="tab-content"><div id="proto-body"><div class="loading-msg">Loading...</div></div><div class="notes-sec"><div class="notes-ttl">Notes</div><textarea class="notes-area" id="n-proto" placeholder="Notes for Prototyping..." oninput="sectionChanged('proto')"></textarea></div></div>
+  <div id="tab-eval" class="tab-content"><div id="eval-body"><div class="loading-msg">Loading...</div></div><div class="notes-sec"><div class="notes-ttl">Notes</div><textarea class="notes-area" id="n-eval" placeholder="Notes for Concept Evaluation..." oninput="sectionChanged('eval')"></textarea></div></div>
+  <div id="tab-admin" class="tab-content">
+    <div class="sec-hdr"><div class="sec-tag">ADMIN</div><div><div class="sec-title">Admin Panel</div><div class="sec-desc">Manage user roles. Only super-admins can promote or demote users.</div></div></div>
+    <div class="card"><div class="ctitle">User Roles</div><div id="roles-body"><div class="loading-msg">Loading...</div></div>
+    <div style="margin-top:1rem;display:flex;gap:8px;">
+      <input class="finp" id="promote-email" placeholder="Email to promote to admin...">
+      <button class="new-sheet-btn" onclick="promoteUser()">Promote to Admin</button>
+    </div></div>
+  </div>
 </div>
 
-<div class="save-toast" id="toast">Saved ✓</div>
+<div class="toast" id="toast"></div>
 
 <script>
 const SB_URL='https://qsiozultzyirdvnqazcc.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFzaW96dWx0enlpcmR2bnFhemNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MDU4NDQsImV4cCI6MjA5MzQ4MTg0NH0.dsFX8pdYnEpNnxEHScU6SJREgS2QyCOhb3PRFGwK-Ao';
-const ADMIN_EMAIL='Ultima610@gmail.com';
-const sb=supabase.createClient(SB_URL,SB_KEY);
-let user=null,isAdmin=false,viewUid=null,D={},allWS=[],saveT=null;
+const SUPER_ADMIN='ultima610@gmail.com';
+const sb=supabase.createClient(SB_URL,SB_KEY,{realtime:{params:{eventsPerSecond:20}}});
+
 const DIFF=['','Low','Med','High'],VAL=['','Low','Med','High'],PRI=['','Must Do','Consider','Skip'],MS=['','Alpha','Bravo','Charlie','Delta'];
+let user=null,isAdmin=false,currentSheet=null,D={},saveTimers={},realtimeSub=null,sheets=[];
 
 // ── HELPERS ──
-function sel(opts,cur,cb){const s=document.createElement('select');s.className='fsel';opts.forEach(o=>{const op=document.createElement('option');op.value=o;op.textContent=o||'— select —';if(o===cur)op.selected=true;s.appendChild(op);});s.onchange=()=>{cb(s.value);as();};return s;}
-function inp(v,ph,cb){const i=document.createElement('input');i.className='finp';i.value=v||'';i.placeholder=ph||'';i.oninput=()=>{cb(i.value);as();};return i;}
-function txt(v,ph,cb){const t=document.createElement('textarea');t.className='ftxt';t.value=v||'';t.placeholder=ph||'';t.oninput=()=>{cb(t.value);as();};return t;}
-function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;if(html)e.innerHTML=html;return e;}
+function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;if(html!==undefined)e.innerHTML=html;return e;}
+function sel(opts,cur,cb){const s=el('select','fsel');opts.forEach(o=>{const op=el('option');op.value=o;op.textContent=o||'— select —';if(o===cur)op.selected=true;s.appendChild(op);});s.onchange=()=>{cb(s.value);};return s;}
+function inp(v,ph,cb){const i=el('input','finp');i.value=v||'';i.placeholder=ph||'';i.oninput=()=>cb(i.value);return i;}
+function txt(v,ph,cb){const t=el('textarea','ftxt');t.value=v||'';t.placeholder=ph||'';t.oninput=()=>cb(t.value);return t;}
+function showToast(msg,type='saved'){const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type+' show';clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2200);}
 
 // ── AUTH ──
 async function signInGoogle(){await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin}});}
-async function signOut(){await sb.auth.signOut();location.reload();}
+async function signOut(){if(realtimeSub)sb.removeChannel(realtimeSub);await sb.auth.signOut();location.reload();}
 
 sb.auth.onAuthStateChange(async(ev,sess)=>{
   if(sess?.user){
-    user=sess.user;isAdmin=user.email.toLowerCase()===ADMIN_EMAIL.toLowerCase();
-    viewUid=user.id;
+    user=sess.user;
     document.getElementById('auth-screen').style.display='none';
-    document.getElementById('app').style.display='block';
     document.getElementById('hdr-email').textContent=user.email;
-    if(isAdmin){document.getElementById('admin-badge').classList.add('show');document.getElementById('admin-bar').classList.add('show');await loadAllUsers();}
-    await loadWS();renderAll();
-  }else{document.getElementById('auth-screen').style.display='flex';document.getElementById('app').style.display='none';}
+    document.querySelector('.picker-signout').textContent='Sign out ('+user.email+')';
+    await checkAdmin();
+    await loadSheets();
+    document.getElementById('sheet-picker').style.display='flex';
+  } else {
+    document.getElementById('auth-screen').style.display='flex';
+    document.getElementById('sheet-picker').style.display='none';
+    document.getElementById('app').style.display='none';
+  }
 });
 
-async function loadAllUsers(){
-  const{data}=await sb.from('worksheets').select('user_id,data');
-  allWS=data||[];
-  const s=document.getElementById('user-sel');
-  s.innerHTML=`<option value="${user.id}">My View (Admin)</option>`;
-  allWS.forEach(w=>{if(w.user_id===user.id)return;const e=w.data?.email||w.user_id.substring(0,8);const o=document.createElement('option');o.value=w.user_id;o.textContent=e;s.appendChild(o);});
+async function checkAdmin(){
+  isAdmin = user.email.toLowerCase()===SUPER_ADMIN;
+  if(!isAdmin){
+    const{data}=await sb.from('user_roles').select('role').eq('email',user.email).single();
+    if(data?.role==='admin')isAdmin=true;
+  }
+  if(isAdmin){
+    document.getElementById('admin-tag').style.display='inline';
+    document.getElementById('admin-tab-btn').style.display='inline';
+  }
 }
 
-async function switchUser(uid){
-  if(!uid)return;viewUid=uid;
-  const w=allWS.find(x=>x.user_id===uid);
-  document.getElementById('admin-viewing').textContent='→ '+(w?.data?.email||uid);
-  await loadWS();renderAll();
+// ── SHEETS ──
+async function loadSheets(){
+  const{data}=await sb.from('sheets').select('*').order('created_at',{ascending:false});
+  sheets=data||[];
+  renderSheetList();
+}
+
+function renderSheetList(){
+  const list=document.getElementById('sheet-list');
+  list.innerHTML='';
+  if(!sheets.length){list.innerHTML='<div style="color:var(--muted);font-size:13px;padding:1rem;text-align:center;">No sheets yet. Create one below!</div>';return;}
+  sheets.forEach(sheet=>{
+    const item=el('div','sheet-item'+(currentSheet?.id===sheet.id?' active':''));
+    const name=el('div','sheet-name');name.textContent=sheet.name;
+    const meta=el('div','sheet-meta');meta.textContent='Created '+new Date(sheet.created_at).toLocaleDateString();
+    const delBtn=el('button','sheet-del');delBtn.textContent='✕';
+    delBtn.title='Delete sheet';
+    delBtn.onclick=async(e)=>{e.stopPropagation();if(confirm('Delete "'+sheet.name+'"? This cannot be undone.')){await sb.from('sheets').delete().eq('id',sheet.id);await loadSheets();}};
+    item.appendChild(name);item.appendChild(meta);if(isAdmin)item.appendChild(delBtn);
+    item.onclick=()=>{currentSheet=sheet;renderSheetList();document.getElementById('open-btn').disabled=false;};
+    list.appendChild(item);
+  });
+}
+
+async function createSheet(){
+  const name=document.getElementById('new-sheet-name').value.trim();
+  if(!name)return;
+  const{data,error}=await sb.from('sheets').insert({name,created_by:user.email}).select().single();
+  if(!error&&data){document.getElementById('new-sheet-name').value='';currentSheet=data;await loadSheets();document.getElementById('open-btn').disabled=false;}
+}
+
+async function openSheet(){
+  if(!currentSheet)return;
+  document.getElementById('sheet-picker').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('sheet-pill').textContent=currentSheet.name;
+  await loadAllSections();
+  renderAll();
+  subscribeRealtime();
+  if(isAdmin)await renderAdmin();
+}
+
+function backToPicker(){
+  if(realtimeSub){sb.removeChannel(realtimeSub);realtimeSub=null;}
+  document.getElementById('app').style.display='none';
+  document.getElementById('sheet-picker').style.display='flex';
+  showTab('readme',document.querySelector('.tab-btn'));
+  loadSheets();
+}
+
+// ── REALTIME ──
+function subscribeRealtime(){
+  if(realtimeSub)sb.removeChannel(realtimeSub);
+  realtimeSub=sb.channel('sheet-'+currentSheet.id)
+    .on('postgres_changes',{event:'*',schema:'public',table:'sheet_data',filter:'sheet_id=eq.'+currentSheet.id},
+      payload=>{
+        const sec=payload.new?.section;
+        if(!sec)return;
+        const newData=payload.new?.data;
+        if(!newData)return;
+        const focused=document.activeElement;
+        D[sec]=newData;
+        // re-render section without disrupting currently focused input
+        renderSection(sec);
+        showCollab(sec);
+        showToast('↻ Live update received','live');
+      })
+    .subscribe();
+}
+
+function showCollab(sec){
+  const bar=document.getElementById('collab-bar');
+  document.getElementById('collab-msg').textContent='Another user just updated: '+sec.toUpperCase();
+  bar.classList.add('show');
+  clearTimeout(bar._t);bar._t=setTimeout(()=>bar.classList.remove('show'),3000);
 }
 
 // ── DATA ──
-function defaultData(){return{
-  email:user?.email||'',
-  notes:{plan:'',gr:'',cpm:'',strat:'',specs:'',proto:'',eval:'',wg:''},
-  plan:[
-    {phase:'Kickoff Prep',section:'Assign Work Groups',tasks:[{t:'6369/6773 will split and work separately but share results',d:false},{t:'Update work groups tab',d:false},{t:'Assign table seating',d:false}]},
-    {phase:'Kickoff Prep',section:'Admin Prep',tasks:[{t:'Setup and test connection to Live Stream',d:false},{t:'Test mic',d:false},{t:'Setup group work tables',d:false},{t:'Build Google Form rules review worksheet',d:false},{t:'Make prototyping shopping list',d:false},{t:'Setup Advantage Scope Field Simulator',d:false}]},
-    {phase:'Kickoff Prep',section:'Watch Kickoff Stream',tasks:[{t:'Watch x2 more times',d:false},{t:'Download game manual',d:false},{t:'Download and print field diagram',d:false}]},
-    {phase:'Define the Problem',section:'Analyze Game Rules',tasks:[{t:'Individually read manual in entirety',d:false},{t:'Focus on requirements/constraints that affect robot design',d:false},{t:'Review Pre-BOM needs',d:false}]},
-    {phase:'Research',section:'Analyze Strategies',tasks:[{t:"Examine potential robot archetypes",d:false},{t:"Evaluate Karthik's CPM model",d:false},{t:'Simulate gameplay and evaluate CPM and SWOT',d:false},{t:'Brainstorm programming solutions',d:false},{t:'Watch field tour video and review strategies',d:false}]},
-    {phase:'Generate Specs',section:'Identify Robot Specifications',tasks:[{t:'Review rules and analysis, consolidate into desired specs',d:false},{t:'Document only must-do items',d:false},{t:'Identify prototyping and proof of concept needs',d:false}]},
-    {phase:'Develop Concepts',section:'Brainstorm & Prototype',tasks:[{t:'Sketch/KCAD in relation to field/game elements',d:false},{t:'Show geometrical proof against field/game elements',d:false},{t:'Develop & assign prototype/proof of concept tasks',d:false},{t:'Review Ri3D designs',d:false},{t:'Assess Everybot / REVbot / WCPbot',d:false}]},
-    {phase:'Choose Concept',section:'Final Selection',tasks:[{t:'Choose concept, kitbot, or hybrid',d:false},{t:'Update EN with Robot Concept and requirements/constraints',d:false}]},
-  ],
-  wg:{
-    students:['Nisith','Grayson','Brady','Nick','Malak','James','Amy','Drew','Abbey','Saina','Madison','Garrett','Kevin'],
-    groups:[{name:'Drive Base',lead:'',cad:'',members:[]},{name:'Intake',lead:'',cad:'',members:[]},{name:'Scoring',lead:'',cad:'',members:[]},{name:'Climb',lead:'',cad:'',members:[]},{name:'Index',lead:'',cad:'',members:[]}]
-  },
-  gr:{
-    intake:[{loc:'',diff:'',val:''}],
-    rp:[{task:'',pts:'',diff:''}],
-    scoring:[{task:'',pts:'',diff:''}],
-    pps:[{task:'',time:'',pps:''}],
-    defense:[{task:'',diff:'',val:''}],
-    penalty:[{task:'',pts:'',impact:''}],
-    constraints:[{name:'Max Frame Size',val:'27.5 × 27.5" MAX'}],
-    qa:[{q:'',a:''}],
-  },
-  cpm:{scenario:'Drive to pose Shooter (score from positions 4,5,6,7)',cycles:'10',points:'264',time:'69.6s',intake:'10 sec',recover:'0.081 sec',spinup:'0.9 sec',speed:'10 fps',window:'105 sec (omits 15s auton + 30s endgame)',analysis:'Shooters require time to spin up to speed and recover between shots to maintain accuracy.'},
-  strat:{summary:'',archetypes:[{name:'',pros:'',cpm:'',score:'~50'},{name:'',pros:'',cpm:'',score:'~80'},{name:'',pros:'',cpm:'',score:'~120'},{name:'',pros:'',cpm:'',score:'~200'}],swot:{s:'',w:'',o:'',t:''},eng:[{sub:'',cap:'',ben:'',diff:''}],prog:[{cap:'',ben:'',diff:'',val:''}]},
-  specs:{caps:[{name:'<1 second intake time',desc:'',when:'Bravo'},{name:'Minimum 24 ball storage',desc:'',when:'Bravo'},{name:'Under 22"',desc:'',when:'Bravo'},{name:'Level 1',desc:'',when:'Bravo'},{name:'Level 3',desc:'',when:'Charlie'},{name:'Hooded Shooter',desc:'',when:'Bravo'},{name:'Turreted Shooter',desc:'',when:'Bravo'},{name:"Shooter range 2-20'",desc:'',when:'Bravo'}],quals:[{name:'Weight',target:'',notes:''},{name:'CG',target:'',notes:''},{name:'Drivebase dimensions',target:'27×27"',notes:''},{name:'Drive gear ratio',target:'',notes:''},{name:'Drivebase type',target:'',notes:''},{name:'Reliability',target:'',notes:''}],prog:[{task:'Turret coded and tested with close and long range tracking',when:'Bravo',notes:'Critical path: 100% Mobility'},{task:'Hood with distance tracking and variation',when:'Bravo',notes:'Critical path: Touch it Own'},{task:'Flywheels tuned with exact velocity',when:'Bravo',notes:'Critical path: 100 in 1 Scoring'},{task:'"Do we have a ball" reflective sensors',when:'Bravo',notes:''},{task:'Full field localization',when:'Bravo',notes:''}]},
-  proto:{tasks:[{task:'Shooter compression, wheel compression, speed',lead:'Grayson',members:'',pri:'Must Do'},{task:'Intake wheel type, compression. Test star wheels and geko wheels.',lead:'Nick',members:'',pri:'Must Do'},{task:'Testing rubber coated belts for the transfer',lead:'Nisith',members:'',pri:'Must Do'}]},
-  eval:{overview:[{c:'Archetype',base:'',c1:'',c2:'',c3:''},{c:'Anticipated CPM',base:'',c1:'',c2:'',c3:''},{c:'Proven CAD Geometry?',base:'',c1:'',c2:'',c3:''}],simplicity:[{m:'Number of Subsystems',base:'',c1:'',c2:'',c3:''},{m:'Scoring DOFs',base:'',c1:'',c2:'',c3:''},{m:'Number of Handoffs',base:'',c1:'',c2:'',c3:''},{m:'Custom Concepts',base:'',c1:'',c2:'',c3:''}],matrix:[{lbl:'Design Difficulty (×1)',desc:'Custom designs, tight fits, many subsystems add difficulty',base:3,c1:0,c2:0,c3:0},{lbl:'Build Difficulty (×1)',desc:"Look at old robots — if we haven't done it before",base:3,c1:0,c2:0,c3:0},{lbl:'Programming Difficulty (×1)',desc:'Many DOFs and subsystems add difficulty',base:2,c1:0,c2:0,c3:0},{lbl:'Risk Level (×1)',desc:"How far within or outside of team's capabilities",base:3,c1:0,c2:0,c3:0},{lbl:'Robot Capability (×1)',desc:'CPM Performance',base:3,c1:0,c2:0,c3:0}]}
-};}
+const SECTIONS=['plan','wg','gr','cpm','strat','specs','proto','eval'];
 
-async function loadWS(){
-  const{data}=await sb.from('worksheets').select('data').eq('user_id',viewUid).single();
-  D=data?.data?deepMerge(defaultData(),data.data):defaultData();
+function defaultSection(sec){
+  const defs={
+    plan:{tasks:[
+      {phase:'Kickoff Prep',section:'Assign Work Groups',items:[{t:'6369/6773 will split and work separately but share results',d:false},{t:'Update work groups tab',d:false},{t:'Assign table seating',d:false}]},
+      {phase:'Kickoff Prep',section:'Admin Prep',items:[{t:'Setup and test connection to Live Stream',d:false},{t:'Test mic',d:false},{t:'Setup group work tables',d:false},{t:'Build Google Form rules review worksheet',d:false},{t:'Make prototyping shopping list',d:false},{t:'Setup Advantage Scope Field Simulator',d:false}]},
+      {phase:'Kickoff Prep',section:'Watch Kickoff Stream',items:[{t:'Watch x2 more times',d:false},{t:'Download game manual',d:false},{t:'Download and print field diagram',d:false}]},
+      {phase:'Define the Problem',section:'Analyze Game Rules',items:[{t:'Individually read manual in entirety',d:false},{t:'Focus on requirements/constraints that affect robot design',d:false},{t:'Review Pre-BOM needs',d:false}]},
+      {phase:'Research',section:'Analyze Strategies',items:[{t:'Examine potential robot archetypes',d:false},{t:"Evaluate Karthik's CPM model",d:false},{t:'Simulate gameplay and evaluate CPM and SWOT',d:false},{t:'Brainstorm programming solutions',d:false},{t:'Watch field tour video and review strategies',d:false}]},
+      {phase:'Generate Specs',section:'Identify Robot Specifications',items:[{t:'Review rules and analysis, consolidate into desired specs',d:false},{t:'Document only must-do items',d:false},{t:'Identify prototyping and proof of concept needs',d:false}]},
+      {phase:'Develop Concepts',section:'Brainstorm & Prototype',items:[{t:'Sketch/KCAD in relation to field/game elements',d:false},{t:'Show geometrical proof against field/game elements',d:false},{t:'Develop & assign prototype/proof of concept tasks',d:false},{t:'Review Ri3D designs',d:false},{t:'Assess Everybot / REVbot / WCPbot',d:false}]},
+      {phase:'Choose Concept',section:'Final Selection',items:[{t:'Choose concept, kitbot, or hybrid',d:false},{t:'Update EN with Robot Concept and requirements/constraints',d:false}]},
+    ],notes:''},
+    wg:{students:['Nisith','Grayson','Brady','Nick','Malak','James','Amy','Drew','Abbey','Saina','Madison','Garrett','Kevin'],groups:[{name:'Drive Base',lead:'',cad:'',members:[]},{name:'Intake',lead:'',cad:'',members:[]},{name:'Scoring',lead:'',cad:'',members:[]},{name:'Climb',lead:'',cad:'',members:[]},{name:'Index',lead:'',cad:'',members:[]}],notes:''},
+    gr:{intake:[{loc:'',diff:'',val:''}],rp:[{task:'',pts:'',diff:''}],scoring:[{task:'',pts:'',diff:''}],pps:[{task:'',time:'',pps:''}],defense:[{task:'',diff:'',val:''}],penalty:[{task:'',pts:'',impact:''}],constraints:[{name:'Max Frame Size',val:'27.5 × 27.5" MAX'}],qa:[{q:'',a:''}],notes:''},
+    cpm:{scenario:'Drive to pose Shooter (positions 4,5,6,7)',cycles:'10',points:'264',time:'69.6s',intake:'10 sec',recover:'0.081 sec',spinup:'0.9 sec',speed:'10 fps',window:'105 sec (omits 15s auton + 30s endgame)',analysis:'Shooters require time to spin up to speed and recover between shots.',notes:''},
+    strat:{summary:'',archetypes:[{name:'',pros:'',cpm:'',score:'~50'},{name:'',pros:'',cpm:'',score:'~80'},{name:'',pros:'',cpm:'',score:'~120'},{name:'',pros:'',cpm:'',score:'~200'}],swot:{s:'',w:'',o:'',t:''},eng:[{sub:'',cap:'',ben:'',diff:''}],prog:[{cap:'',ben:'',diff:'',val:''}],notes:''},
+    specs:{caps:[{name:'<1 second intake time',desc:'',when:'Bravo'},{name:'Minimum 24 ball storage',desc:'',when:'Bravo'},{name:'Under 22"',desc:'',when:'Bravo'},{name:'Level 1',desc:'',when:'Bravo'},{name:'Level 3',desc:'',when:'Charlie'},{name:'Hooded Shooter',desc:'',when:'Bravo'},{name:'Turreted Shooter',desc:'',when:'Bravo'},{name:"Shooter range 2-20'",desc:'',when:'Bravo'}],quals:[{name:'Weight',target:'',notes:''},{name:'CG',target:'',notes:''},{name:'Drivebase dimensions',target:'27×27"',notes:''},{name:'Drive gear ratio',target:'',notes:''},{name:'Drivebase type',target:'',notes:''},{name:'Reliability',target:'',notes:''}],prog:[{task:'Turret coded and tested with close and long range tracking',when:'Bravo',notes:'Critical path: 100% Mobility'},{task:'Hood with distance tracking and variation',when:'Bravo',notes:'Critical path: Touch it Own'},{task:'Flywheels tuned with exact velocity',when:'Bravo',notes:'Critical path: 100 in 1 Scoring'},{task:'"Do we have a ball" reflective sensors',when:'Bravo',notes:''},{task:'Full field localization',when:'Bravo',notes:''}],notes:''},
+    proto:{tasks:[{task:'Shooter compression, wheel compression, speed',lead:'Grayson',members:'',pri:'Must Do'},{task:'Intake wheel type, compression. Test star wheels and geko wheels.',lead:'Nick',members:'',pri:'Must Do'},{task:'Testing rubber coated belts for the transfer',lead:'Nisith',members:'',pri:'Must Do'}],notes:''},
+    eval:{overview:[{c:'Archetype',base:'',c1:'',c2:'',c3:''},{c:'Anticipated CPM',base:'',c1:'',c2:'',c3:''},{c:'Proven CAD Geometry?',base:'',c1:'',c2:'',c3:''}],simplicity:[{m:'Number of Subsystems',base:'',c1:'',c2:'',c3:''},{m:'Scoring DOFs',base:'',c1:'',c2:'',c3:''},{m:'Number of Handoffs',base:'',c1:'',c2:'',c3:''},{m:'Custom Concepts',base:'',c1:'',c2:'',c3:''}],matrix:[{lbl:'Design Difficulty (×1)',desc:'Custom designs, tight fits, many subsystems add difficulty',base:3,c1:0,c2:0,c3:0},{lbl:'Build Difficulty (×1)',desc:"Look at old robots — if we haven't done it before",base:3,c1:0,c2:0,c3:0},{lbl:'Programming Difficulty (×1)',desc:'Many DOFs and subsystems add difficulty',base:2,c1:0,c2:0,c3:0},{lbl:'Risk Level (×1)',desc:"How far within or outside of team's capabilities",base:3,c1:0,c2:0,c3:0},{lbl:'Robot Capability (×1)',desc:'CPM Performance',base:3,c1:0,c2:0,c3:0}],notes:''},
+  };
+  return defs[sec]||{};
 }
 
-async function saveWS(){
-  D.email=user.email;
-  ['plan','gr','cpm','strat','specs','proto','eval'].forEach(k=>{const el=document.getElementById('n-'+k);if(el)D.notes[k]=el.value;});
-  const nel=document.getElementById('n-wg');if(nel)D.notes.wg=nel.value;
-  await sb.from('worksheets').upsert({user_id:viewUid,data:D,updated_at:new Date().toISOString()},{onConflict:'user_id'});
-  showToast();
+async function loadAllSections(){
+  const{data}=await sb.from('sheet_data').select('section,data').eq('sheet_id',currentSheet.id);
+  D={};
+  SECTIONS.forEach(sec=>{
+    const found=(data||[]).find(r=>r.section===sec);
+    D[sec]=found?.data||defaultSection(sec);
+  });
 }
 
-function as(){clearTimeout(saveT);saveT=setTimeout(saveWS,1200);}
+function sectionChanged(sec){
+  // collect notes textarea
+  const nEl=document.getElementById('n-'+sec);
+  if(nEl&&D[sec])D[sec].notes=nEl.value;
+  scheduleSave(sec);
+}
 
-function showToast(){const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
+function scheduleSave(sec){
+  clearTimeout(saveTimers[sec]);
+  saveTimers[sec]=setTimeout(()=>saveSection(sec),900);
+}
 
-function deepMerge(a,b){const o=Object.assign({},a);for(const k in b){if(b[k]&&typeof b[k]==='object'&&!Array.isArray(b[k]))o[k]=deepMerge(a[k]||{},b[k]);else o[k]=b[k];}return o;}
+async function saveSection(sec){
+  if(!currentSheet||!D[sec])return;
+  const nEl=document.getElementById('n-'+sec);
+  if(nEl&&D[sec])D[sec].notes=nEl.value;
+  await sb.from('sheet_data').upsert({sheet_id:currentSheet.id,section:sec,data:D[sec],updated_at:new Date().toISOString()},{onConflict:'sheet_id,section'});
+  showToast('Saved ✓','saved');
+}
 
-function showTab(id,btn){document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.getElementById('tab-'+id).classList.add('active');if(btn)btn.classList.add('active');}
+function changed(sec){scheduleSave(sec);}
 
-function renderAll(){
-  renderPlan();renderWG();renderGR();renderCPM();renderStrat();renderSpecs();renderProto();renderEval();
-  ['plan','gr','cpm','strat','specs','proto','eval'].forEach(k=>{const e=document.getElementById('n-'+k);if(e)e.value=D.notes?.[k]||'';});
-  const ne=document.getElementById('n-wg');if(ne)ne.value=D.notes?.wg||'';
+// ── TABS ──
+function showTab(id,btn){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  if(btn)btn.classList.add('active');
+}
+
+// ── RENDER ALL ──
+function renderAll(){SECTIONS.forEach(sec=>renderSection(sec));}
+
+function renderSection(sec){
+  const nEl=document.getElementById('n-'+sec);
+  if(nEl&&D[sec]?.notes!==undefined)nEl.value=D[sec].notes||'';
+  switch(sec){
+    case 'plan': renderPlan(); break;
+    case 'wg': renderWG(); break;
+    case 'gr': renderGR(); break;
+    case 'cpm': renderCPM(); break;
+    case 'strat': renderStrat(); break;
+    case 'specs': renderSpecs(); break;
+    case 'proto': renderProto(); break;
+    case 'eval': renderEval(); break;
+  }
 }
 
 // ── PLAN ──
 function renderPlan(){
   const c=document.getElementById('plan-body');c.innerHTML='';
+  const p=D.plan;if(!p?.tasks)return;
   let lastPhase='';
-  D.plan.forEach((g,gi)=>{
-    if(g.phase!==lastPhase){const p=el('div','phase-lbl');p.textContent=g.phase;c.appendChild(p);lastPhase=g.phase;}
+  p.tasks.forEach((g,gi)=>{
+    if(g.phase!==lastPhase){const ph=el('div','phase-lbl');ph.textContent=g.phase;c.appendChild(ph);lastPhase=g.phase;}
     const card=el('div','card');
     const ct=el('div','ctitle');ct.textContent=g.section;card.appendChild(ct);
     const ul=el('ul','checklist');
-    g.tasks.forEach((task,ti)=>{
+    g.items.forEach((item,ii)=>{
       const li=el('li');
-      const icon=el('span','chk'+(task.d?' done':''));icon.textContent=task.d?'✓':'';
-      icon.onclick=()=>{task.d=!task.d;icon.classList.toggle('done',task.d);icon.textContent=task.d?'✓':'';lbl.classList.toggle('done',task.d);as();};
-      const lbl=el('span','chk-lbl'+(task.d?' done':''));lbl.textContent=task.t;
-      const db=el('button','del-btn');db.textContent='✕';db.onclick=()=>{g.tasks.splice(ti,1);renderPlan();as();};
+      const icon=el('span','chk'+(item.d?' done':''));icon.textContent=item.d?'✓':'';
+      icon.onclick=()=>{item.d=!item.d;icon.classList.toggle('done',item.d);icon.textContent=item.d?'✓':'';lbl.classList.toggle('done',item.d);changed('plan');};
+      const lbl=el('span','chk-lbl'+(item.d?' done':''));lbl.textContent=item.t;
+      const db=el('button','del-btn');db.textContent='✕';db.title='Remove task';
+      db.onclick=()=>{g.items.splice(ii,1);renderPlan();changed('plan');};
       li.appendChild(icon);li.appendChild(lbl);li.appendChild(db);ul.appendChild(li);
     });
-    card.appendChild(ul);
-    const ab=el('button','add-btn');ab.textContent='+ Add task';ab.onclick=()=>{const t=prompt('New task:');if(t){g.tasks.push({t,d:false});renderPlan();as();}};
-    card.appendChild(ab);c.appendChild(card);
+    // Inline add row
+    const addLi=el('li');addLi.style.paddingTop='8px';
+    const addInp=el('input','finp');addInp.placeholder='+ Add new task...';addInp.style.fontSize='13px';
+    addInp.onkeydown=e=>{
+      if(e.key==='Enter'&&addInp.value.trim()){
+        g.items.push({t:addInp.value.trim(),d:false});addInp.value='';renderPlan();changed('plan');
+      }
+    };
+    addLi.appendChild(addInp);ul.appendChild(addLi);
+    card.appendChild(ul);c.appendChild(card);
   });
 }
 
 // ── WORK GROUPS ──
 function renderWG(){
   const c=document.getElementById('wg-body');c.innerHTML='';
-  const wg=D.wg;
-  // Roster
+  const wg=D.wg;if(!wg)return;
   const rCard=el('div','card');
-  const rTitle=el('div','ctitle');rTitle.textContent='Student Roster';rCard.appendChild(rTitle);
-  const rDesc=el('div');rDesc.style.cssText='font-size:12px;color:var(--muted);margin-bottom:8px;';rDesc.textContent='Manage the student roster. Use the dropdown in each subteam to assign members.';rCard.appendChild(rDesc);
+  const rT=el('div','ctitle');rT.textContent='Student Roster';rCard.appendChild(rT);
   const pool=el('div','pool');
-  wg.students.forEach((s,si)=>{
+  (wg.students||[]).forEach((s,si)=>{
     const chip=el('span','s-chip');chip.textContent=s;
-    const rm=el('span');rm.textContent=' ✕';rm.style.cssText='color:var(--dim);font-size:10px;cursor:pointer;';
-    rm.onclick=(e)=>{e.stopPropagation();if(confirm('Remove '+s+' from roster?')){wg.students.splice(si,1);wg.groups.forEach(g=>{const i=g.members.indexOf(s);if(i>-1)g.members.splice(i,1);});renderWG();as();}};
+    const rm=el('span');rm.textContent=' ✕';rm.style.cssText='color:var(--dim);font-size:10px;cursor:pointer;margin-left:2px;';
+    rm.onclick=()=>{wg.students.splice(si,1);wg.groups.forEach(g=>{const i=g.members.indexOf(s);if(i>-1)g.members.splice(i,1);});renderWG();changed('wg');};
     chip.appendChild(rm);pool.appendChild(chip);
   });
   rCard.appendChild(pool);
   const addRow=el('div','s-add-row');
   const sInp=el('input','s-inp');sInp.placeholder='Add student name...';
   const sBtn=el('button','sm-btn');sBtn.textContent='+ Add';
-  sBtn.onclick=()=>{const n=sInp.value.trim();if(n&&!wg.students.includes(n)){wg.students.push(n);sInp.value='';renderWG();as();}};
+  sBtn.onclick=()=>{const n=sInp.value.trim();if(n&&!wg.students.includes(n)){wg.students.push(n);sInp.value='';renderWG();changed('wg');}};
   sInp.onkeydown=e=>{if(e.key==='Enter')sBtn.click();};
   addRow.appendChild(sInp);addRow.appendChild(sBtn);rCard.appendChild(addRow);
   c.appendChild(rCard);
 
-  // Groups
   const ph=el('div','phase-lbl');ph.textContent='Design Subteams';c.appendChild(ph);
   const gCard=el('div','card');
-  const gTitle=el('div','ctitle');gTitle.textContent='Subteam Assignments';gCard.appendChild(gTitle);
-  const tbl=el('table','dtbl');
-  tbl.innerHTML='<thead><tr><th>Subteam</th><th>Lead</th><th>CAD Lead</th><th>Members</th><th></th></tr></thead>';
+  const gT=el('div','ctitle');gT.textContent='Subteam Assignments';gCard.appendChild(gT);
+  const tbl=el('table','dtbl');tbl.innerHTML='<thead><tr><th>Subteam</th><th>Lead</th><th>CAD Lead</th><th>Members</th><th></th></tr></thead>';
   const tbody=el('tbody');
-  wg.groups.forEach((g,gi)=>{
+  (wg.groups||[]).forEach((g,gi)=>{
     const tr=el('tr');
-    const tdN=el('td');tdN.appendChild(inp(g.name,'Subteam name...',v=>{g.name=v;}));tr.appendChild(tdN);
-    const tdL=el('td');tdL.appendChild(sel(['',...wg.students],g.lead,v=>{g.lead=v;}));tr.appendChild(tdL);
-    const tdC=el('td');tdC.appendChild(sel(['',...wg.students],g.cad,v=>{g.cad=v;}));tr.appendChild(tdC);
+    const tdN=el('td');const nInp=inp(g.name,'Subteam...',v=>{g.name=v;changed('wg');});tdN.appendChild(nInp);tr.appendChild(tdN);
+    const tdL=el('td');const lSel=sel(['',...(wg.students||[])],g.lead,v=>{g.lead=v;changed('wg');});tdL.appendChild(lSel);tr.appendChild(tdL);
+    const tdC=el('td');const cSel=sel(['',...(wg.students||[])],g.cad,v=>{g.cad=v;changed('wg');});tdC.appendChild(cSel);tr.appendChild(tdC);
     const tdM=el('td');
-    const mList=el('div');mList.style.cssText='display:flex;flex-wrap:wrap;min-height:28px;';
-    g.members.forEach((m,mi)=>{
-      const tag=el('span','m-tag');tag.innerHTML=`${m} <span class="rm" onclick="rmMember(${gi},${mi})">✕</span>`;mList.appendChild(tag);
-    });
-    const mSel=sel(['',...wg.students.filter(s=>!g.members.includes(s))],'',v=>{if(v){g.members.push(v);renderWG();as();}});
+    const mList=el('div');mList.style.cssText='display:flex;flex-wrap:wrap;min-height:24px;';
+    (g.members||[]).forEach((m,mi)=>{const tag=el('span','m-tag');tag.innerHTML=`${m} <span class="m-rm" onclick="rmMember(${gi},${mi})">✕</span>`;mList.appendChild(tag);});
+    const mSel=sel(['',...(wg.students||[]).filter(s=>!(g.members||[]).includes(s))],'',v=>{if(v){if(!g.members)g.members=[];g.members.push(v);renderWG();changed('wg');}});
     mSel.options[0].textContent='+ Add member';mSel.style.marginTop='4px';
     tdM.appendChild(mList);tdM.appendChild(mSel);tr.appendChild(tdM);
-    const tdDel=el('td');const db=el('button','del-btn');db.textContent='✕';db.onclick=()=>{wg.groups.splice(gi,1);renderWG();as();};tdDel.appendChild(db);tr.appendChild(tdDel);
+    const tdDel=el('td');const db=el('button','del-btn');db.textContent='✕';db.onclick=()=>{wg.groups.splice(gi,1);renderWG();changed('wg');};tdDel.appendChild(db);tr.appendChild(tdDel);
     tbody.appendChild(tr);
   });
   tbl.appendChild(tbody);gCard.appendChild(tbl);
-  const gAdd=el('button','add-btn');gAdd.textContent='+ Add subteam';gAdd.onclick=()=>{wg.groups.push({name:'',lead:'',cad:'',members:[]});renderWG();as();};
-  gCard.appendChild(gAdd);c.appendChild(gCard);
+  // inline add group row
+  const addGrpRow=el('div');addGrpRow.style.cssText='display:flex;gap:8px;margin-top:8px;';
+  const grpInp=el('input','finp');grpInp.placeholder='+ New subteam name...';
+  grpInp.onkeydown=e=>{if(e.key==='Enter'&&grpInp.value.trim()){wg.groups.push({name:grpInp.value.trim(),lead:'',cad:'',members:[]});grpInp.value='';renderWG();changed('wg');}};
+  addGrpRow.appendChild(grpInp);gCard.appendChild(addGrpRow);
+  c.appendChild(gCard);
 
   const ns=el('div','notes-sec');
   const nt=el('div','notes-ttl');nt.textContent='Notes';ns.appendChild(nt);
-  const na=el('textarea','notes-area');na.id='n-wg';na.placeholder='Work group notes...';na.value=D.notes?.wg||'';na.oninput=()=>{D.notes.wg=na.value;as();};
+  const na=el('textarea','notes-area');na.id='n-wg';na.placeholder='Work group notes...';na.value=wg.notes||'';na.oninput=()=>{wg.notes=na.value;changed('wg');};
   ns.appendChild(na);c.appendChild(ns);
 }
-function rmMember(gi,mi){D.wg.groups[gi].members.splice(mi,1);renderWG();as();}
+function rmMember(gi,mi){D.wg.groups[gi].members.splice(mi,1);renderWG();changed('wg');}
 
 // ── GAME RULES ──
 function renderGR(){
   const c=document.getElementById('gr-body');c.innerHTML='';
-  const gr=D.gr;
-  function grTable(title,rows,cols,addFn){
-    const card=el('div','card');
-    const ct=el('div','ctitle');ct.textContent=title;card.appendChild(ct);
-    const tbl=el('table','dtbl');
-    const thead=el('thead');thead.innerHTML=`<tr>${cols.map(col=>`<th>${col.lbl}</th>`).join('')}<th></th></tr>`;tbl.appendChild(thead);
+  const gr=D.gr;if(!gr)return;
+  function grT(title,rows,cols,newRow){
+    const card=el('div','card');const ct=el('div','ctitle');ct.textContent=title;card.appendChild(ct);
+    const tbl=el('table','dtbl');tbl.innerHTML=`<thead><tr>${cols.map(col=>`<th>${col.lbl}</th>`).join('')}<th></th></tr></thead>`;
     const tbody=el('tbody');
     rows.forEach((row,ri)=>{
       const tr=el('tr');
       cols.forEach(col=>{
         const td=el('td');
-        if(col.opts)td.appendChild(sel(col.opts,row[col.k],v=>{row[col.k]=v;}));
-        else td.appendChild(inp(row[col.k],col.ph||'',v=>{row[col.k]=v;}));
+        if(col.opts)td.appendChild(sel(col.opts,row[col.k],v=>{row[col.k]=v;changed('gr');}));
+        else{const i=inp(row[col.k],col.ph||'',v=>{row[col.k]=v;changed('gr');});td.appendChild(i);}
         tr.appendChild(td);
       });
-      const tdD=el('td');const db=el('button','del-btn');db.textContent='✕';db.onclick=()=>{rows.splice(ri,1);renderGR();as();};tdD.appendChild(db);tr.appendChild(tdD);
+      const tdD=el('td');const db=el('button','del-btn');db.textContent='✕';db.onclick=()=>{rows.splice(ri,1);renderGR();changed('gr');};tdD.appendChild(db);tr.appendChild(tdD);
       tbody.appendChild(tr);
     });
-    tbl.appendChild(tbody);card.appendChild(tbl);
-    const ab=el('button','add-btn');ab.textContent='+ Add row';ab.onclick=()=>{addFn();renderGR();as();};card.appendChild(ab);
-    return card;
+    // inline add row
+    const addTr=el('tr');
+    const addTd=el('td');addTd.colSpan=cols.length+1;
+    const addI=el('input','finp');addI.placeholder='+ Add row (press Enter)...';addI.style.fontSize='12px';
+    addI.onkeydown=e=>{if(e.key==='Enter'&&addI.value.trim()){const r=newRow(addI.value.trim());rows.push(r);addI.value='';renderGR();changed('gr');}};
+    addTd.appendChild(addI);addTr.appendChild(addTd);tbody.appendChild(addTr);
+    tbl.appendChild(tbody);card.appendChild(tbl);return card;
   }
-  c.appendChild(grTable('Intaking Locations',gr.intake,[{lbl:'Location',k:'loc',ph:'Location...'},{lbl:'Difficulty',k:'diff',opts:DIFF},{lbl:'Value',k:'val',opts:VAL}],()=>gr.intake.push({loc:'',diff:'',val:''})));
-  c.appendChild(grTable('Ranking Points',gr.rp,[{lbl:'Task',k:'task',ph:'Task...'},{lbl:'Points',k:'pts',ph:'Pts'},{lbl:'Difficulty',k:'diff',opts:DIFF}],()=>gr.rp.push({task:'',pts:'',diff:''})));
-  c.appendChild(grTable('Scoring',gr.scoring,[{lbl:'Task',k:'task',ph:'Task...'},{lbl:'Points',k:'pts',ph:'Pts'},{lbl:'Difficulty',k:'diff',opts:DIFF}],()=>gr.scoring.push({task:'',pts:'',diff:''})));
-  c.appendChild(grTable('Points Per Second',gr.pps,[{lbl:'Task',k:'task',ph:'Task...'},{lbl:'Time/Cycle',k:'time',ph:'sec'},{lbl:'Pts/Sec',k:'pps',ph:'pts/s'}],()=>gr.pps.push({task:'',time:'',pps:''})));
+  c.appendChild(grT('Intaking Locations',gr.intake,[{lbl:'Location',k:'loc',ph:'Location name...'},{lbl:'Difficulty',k:'diff',opts:DIFF},{lbl:'Value',k:'val',opts:VAL}],v=>({loc:v,diff:'',val:''})));
+  c.appendChild(grT('Ranking Points',gr.rp,[{lbl:'Task',k:'task',ph:'Task...'},{lbl:'Points',k:'pts',ph:'Pts'},{lbl:'Difficulty',k:'diff',opts:DIFF}],v=>({task:v,pts:'',diff:''})));
+  c.appendChild(grT('Scoring',gr.scoring,[{lbl:'Task',k:'task',ph:'Task...'},{lbl:'Points',k:'pts',ph:'Pts'},{lbl:'Difficulty',k:'diff',opts:DIFF}],v=>({task:v,pts:'',diff:''})));
+  c.appendChild(grT('Points Per Second',gr.pps,[{lbl:'Task',k:'task',ph:'Task...'},{lbl:'Time/Cycle',k:'time',ph:'sec'},{lbl:'Pts/Sec',k:'pps',ph:'pts/s'}],v=>({task:v,time:'',pps:''})));
   const g2=el('div','grid2');
-  g2.appendChild(grTable('Defense Opportunities',gr.defense,[{lbl:'Task',k:'task',ph:'Task...'},{lbl:'Difficulty',k:'diff',opts:DIFF},{lbl:'Value',k:'val',opts:VAL}],()=>gr.defense.push({task:'',diff:'',val:''})));
-  g2.appendChild(grTable('Penalties',gr.penalty,[{lbl:'Task',k:'task',ph:'Task...'},{lbl:'Penalty Pts',k:'pts',ph:'Pts'},{lbl:'Impact',k:'impact',opts:DIFF}],()=>gr.penalty.push({task:'',pts:'',impact:''})));
+  g2.appendChild(grT('Defense Opportunities',gr.defense,[{lbl:'Task',k:'task',ph:'Task...'},{lbl:'Difficulty',k:'diff',opts:DIFF},{lbl:'Value',k:'val',opts:VAL}],v=>({task:v,diff:'',val:''})));
+  g2.appendChild(grT('Penalties',gr.penalty,[{lbl:'Task',k:'task',ph:'Task...'},{lbl:'Penalty Pts',k:'pts',ph:'Pts'},{lbl:'Impact',k:'impact',opts:DIFF}],v=>({task:v,pts:'',impact:''})));
   c.appendChild(g2);
-  c.appendChild(grTable('Design Constraints',gr.constraints,[{lbl:'Constraint',k:'name',ph:'Constraint...'},{lbl:'Value',k:'val',ph:'Value...'}],()=>gr.constraints.push({name:'',val:''})));
-  c.appendChild(grTable('Rules Q&A',gr.qa,[{lbl:'Question',k:'q',ph:'Question...'},{lbl:'Answer',k:'a',ph:'Answer from FIRST Q&A...'}],()=>gr.qa.push({q:'',a:''})));
+  c.appendChild(grT('Design Constraints',gr.constraints,[{lbl:'Constraint',k:'name',ph:'Constraint...'},{lbl:'Value',k:'val',ph:'Value...'}],v=>({name:v,val:''})));
+  c.appendChild(grT('Rules Q&A',gr.qa,[{lbl:'Question',k:'q',ph:'Question...'},{lbl:'Answer',k:'a',ph:'Answer from FIRST Q&A...'}],v=>({q:v,a:''})));
 }
 
 // ── CPM ──
 function renderCPM(){
   const c=document.getElementById('cpm-body');c.innerHTML='';
-  const cpm=D.cpm;
+  const cpm=D.cpm;if(!cpm)return;
   const stats=el('div','grid3');stats.style.marginBottom='1rem';
   [['cycles','Total Cycles'],['points','Total Points'],['time','Time Used']].forEach(([k,lbl])=>{
     const d=el('div','cpm-stat');
-    const v=el('div','cpm-val');v.appendChild(inp(cpm[k],'—',val=>{cpm[k]=val;}));
-    const l=el('div','cpm-lbl');l.textContent=lbl;
-    d.appendChild(v);d.appendChild(l);stats.appendChild(d);
+    const v=el('div','cpm-val');const i=inp(cpm[k],'—',val=>{cpm[k]=val;changed('cpm');});i.style.textAlign='center';v.appendChild(i);
+    const l=el('div','cpm-lbl');l.textContent=lbl;d.appendChild(v);d.appendChild(l);stats.appendChild(d);
   });
   c.appendChild(stats);
   const aCard=el('div','card');const at=el('div','ctitle');at.textContent='Assumptions';aCard.appendChild(at);
-  const ag=el('div');ag.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;font-size:13px;';
+  const ag=el('div');ag.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;';
   [['Scenario','scenario'],['Intake time','intake'],['Recover time','recover'],['Spin up time','spinup'],['Speed','speed'],['Cycle window','window']].forEach(([lbl,k])=>{
-    const d=el('div');const lb=el('span');lb.style.color='var(--muted)';lb.textContent=lbl+': ';d.appendChild(lb);d.appendChild(inp(cpm[k],lbl,v=>{cpm[k]=v;}));ag.appendChild(d);
+    const d=el('div');const lb=el('div');lb.style.cssText='font-size:11px;color:var(--muted);font-family:"IBM Plex Mono",monospace;margin-bottom:3px;';lb.textContent=lbl;
+    d.appendChild(lb);d.appendChild(inp(cpm[k],lbl,v=>{cpm[k]=v;changed('cpm');}));ag.appendChild(d);
   });
   aCard.appendChild(ag);c.appendChild(aCard);
   const anCard=el('div','card');const ant=el('div','ctitle');ant.textContent='Analysis';anCard.appendChild(ant);
-  anCard.appendChild(txt(cpm.analysis,'Enter CPM analysis...',v=>{cpm.analysis=v;}));c.appendChild(anCard);
+  anCard.appendChild(txt(cpm.analysis,'Enter CPM analysis...',v=>{cpm.analysis=v;changed('cpm');}));c.appendChild(anCard);
 }
 
-// ── STRAT ──
+// ── STRATEGY ──
 function renderStrat(){
   const c=document.getElementById('strat-body');c.innerHTML='';
-  const st=D.strat;
+  const st=D.strat;if(!st)return;
   const sCard=el('div','card');sCard.style.borderLeft='3px solid var(--accent)';
   const st2=el('div','ctitle');st2.textContent='Strategy Summary';sCard.appendChild(st2);
-  sCard.appendChild(txt(st.summary,'Enter overall game strategy...',v=>{st.summary=v;}));c.appendChild(sCard);
+  sCard.appendChild(txt(st.summary,'Enter overall game strategy summary...',v=>{st.summary=v;changed('strat');}));c.appendChild(sCard);
 
   const aCard=el('div','card');const at=el('div','ctitle');at.textContent='Anticipated Robot Archetypes';aCard.appendChild(at);
   const aTbl=el('table','dtbl');aTbl.innerHTML='<thead><tr><th>Archetype</th><th>Pros/Cons</th><th>CPM</th><th>Score Potential</th><th></th></tr></thead>';
   const aBody=el('tbody');
   st.archetypes.forEach((a,ai)=>{
     const tr=el('tr');
-    [['name','Archetype...'],['pros','Pros/Cons...'],['cpm','CPM'],['score','Score']].forEach(([k,ph])=>{const td=el('td');td.appendChild(inp(a[k],ph,v=>{a[k]=v;}));tr.appendChild(td);});
-    const tdD=el('td');const db=el('button','del-btn');db.textContent='✕';db.onclick=()=>{st.archetypes.splice(ai,1);renderStrat();as();};tdD.appendChild(db);tr.appendChild(tdD);
-    aBody.appendChild(tr);
+    [['name','Archetype...'],['pros','Pros/Cons...'],['cpm','CPM'],['score','Score']].forEach(([k,ph])=>{const td=el('td');td.appendChild(inp(a[k],ph,v=>{a[k]=v;changed('strat');}));tr.appendChild(td);});
+    const tdD=el('td');const db=el('button','del-btn');db.textContent='✕';db.onclick=()=>{st.archetypes.splice(ai,1);renderStrat();changed('strat');};tdD.appendChild(db);tr.appendChild(tdD);aBody.appendChild(tr);
   });
-  aTbl.appendChild(aBody);aCard.appendChild(aTbl);
-  const aAdd=el('button','add-btn');aAdd.textContent='+ Add archetype';aAdd.onclick=()=>{st.archetypes.push({name:'',pros:'',cpm:'',score:''});renderStrat();as();};
-  aCard.appendChild(aAdd);c.appendChild(aCard);
+  // inline add
+  const addTr=el('tr');const addTd=el('td');addTd.colSpan=5;
+  const addI=el('input','finp');addI.placeholder='+ Add archetype (press Enter)...';addI.style.fontSize='12px';
+  addI.onkeydown=e=>{if(e.key==='Enter'&&addI.value.trim()){st.archetypes.push({name:addI.value.trim(),pros:'',cpm:'',score:''});addI.value='';renderStrat();changed('strat');}};
+  addTd.appendChild(addI);addTr.appendChild(addTd);aBody.appendChild(addTr);
+  aTbl.appendChild(aBody);aCard.appendChild(aTbl);c.appendChild(aCard);
 
   const swCard=el('div','card');const swT=el('div','ctitle');swT.textContent='SWOT Analysis';swCard.appendChild(swT);
   const swGrid=el('div','swot-grid');
   [['S','Strengths','s'],['W','Weaknesses','w'],['O','Opportunities','o'],['T','Threats + Countermeasures','t']].forEach(([cls,lbl,k])=>{
     const cell=el('div','swot-cell '+cls);const sl=el('div','swot-lbl');sl.textContent=lbl;cell.appendChild(sl);
-    cell.appendChild(txt(st.swot[k],'Enter '+lbl.toLowerCase()+'...',v=>{st.swot[k]=v;}));swGrid.appendChild(cell);
+    cell.appendChild(txt(st.swot[k],'Enter '+lbl.toLowerCase()+'...',v=>{st.swot[k]=v;changed('strat');}));swGrid.appendChild(cell);
   });
   swCard.appendChild(swGrid);c.appendChild(swCard);
 
-  function stTable(title,rows,cols,addFn){
+  function stT(title,rows,cols,newRow){
     const card=el('div','card');const ct=el('div','ctitle');ct.textContent=title;card.appendChild(ct);
     const tbl=el('table','dtbl');tbl.innerHTML=`<thead><tr>${cols.map(col=>`<th>${col.lbl}</th>`).join('')}<th></th></tr></thead>`;
     const tbody=el('tbody');
     rows.forEach((row,ri)=>{
       const tr=el('tr');
-      cols.forEach(col=>{const td=el('td');if(col.opts)td.appendChild(sel(col.opts,row[col.k],v=>{row[col.k]=v;}));else td.appendChild(inp(row[col.k],col.ph||'',v=>{row[col.k]=v;}));tr.appendChild(td);});
-      const tdD=el('td');const db=el('button','del-btn');db.textContent='✕';db.onclick=()=>{rows.splice(ri,1);renderStrat();as();};tdD.appendChild(db);tr.appendChild(tdD);tbody.appendChild(tr);
+      cols.forEach(col=>{const td=el('td');if(col.opts)td.appendChild(sel(col.opts,row[col.k],v=>{row[col.k]=v;changed('strat');}));else td.appendChild(inp(row[col.k],col.ph||'',v=>{row[col.k]=v;changed('strat');}));tr.appendChild(td);});
+      const tdD=el('td');const db=el('button','del-btn');db.textContent='✕';db.onclick=()=>{rows.splice(ri,1);renderStrat();changed('strat');};tdD.appendChild(db);tr.appendChild(tdD);tbody.appendChild(tr);
     });
-    tbl.appendChild(tbody);card.appendChild(tbl);
-    const ab=el('button','add-btn');ab.textContent='+ Add';ab.onclick=()=>{addFn();renderStrat();as();};card.appendChild(ab);return card;
+    const addTr=el('tr');const addTd=el('td');addTd.colSpan=cols.length+1;
+    const addI=el('input','finp');addI.placeholder='+ Add row (press Enter)...';addI.style.fontSize='12px';
+    addI.onkeydown=e=>{if(e.key==='Enter'&&addI.value.trim()){rows.push(newRow(addI.value.trim()));addI.value='';renderStrat();changed('strat');}};
+    addTd.appendChild(addI);addTr.appendChild(addTd);tbody.appendChild(addTr);
+    tbl.appendChild(tbody);card.appendChild(tbl);return card;
   }
-  c.appendChild(stTable('Engineering Solutions',st.eng,[{lbl:'Subsystem',k:'sub',ph:'Subsystem...'},{lbl:'Capability',k:'cap',ph:'Capability...'},{lbl:'Benefit',k:'ben',ph:'Benefit...'},{lbl:'Difficulty',k:'diff',opts:DIFF}],()=>st.eng.push({sub:'',cap:'',ben:'',diff:''})));
-  c.appendChild(stTable('Programming Solutions',st.prog,[{lbl:'Capability',k:'cap',ph:'Capability...'},{lbl:'Benefit',k:'ben',ph:'Benefit...'},{lbl:'Difficulty',k:'diff',opts:DIFF},{lbl:'Value',k:'val',opts:VAL}],()=>st.prog.push({cap:'',ben:'',diff:'',val:''})));
+  c.appendChild(stT('Engineering Solutions',st.eng,[{lbl:'Subsystem',k:'sub',ph:'Subsystem...'},{lbl:'Capability',k:'cap',ph:'Capability...'},{lbl:'Benefit',k:'ben',ph:'Benefit...'},{lbl:'Difficulty',k:'diff',opts:DIFF}],v=>({sub:v,cap:'',ben:'',diff:''})));
+  c.appendChild(stT('Programming Solutions',st.prog,[{lbl:'Capability',k:'cap',ph:'Capability...'},{lbl:'Benefit',k:'ben',ph:'Benefit...'},{lbl:'Difficulty',k:'diff',opts:DIFF},{lbl:'Value',k:'val',opts:VAL}],v=>({cap:v,ben:'',diff:'',val:''})));
 }
 
 // ── SPECS ──
 function renderSpecs(){
   const c=document.getElementById('specs-body');c.innerHTML='';
-  const sp=D.specs;
-  function spTable(title,rows,cols,addFn){
+  const sp=D.specs;if(!sp)return;
+  function spT(title,rows,cols,newRow){
     const card=el('div','card');const ct=el('div','ctitle');ct.textContent=title;card.appendChild(ct);
     const tbl=el('table','dtbl');tbl.innerHTML=`<thead><tr>${cols.map(col=>`<th>${col.lbl}</th>`).join('')}<th></th></tr></thead>`;
     const tbody=el('tbody');
     rows.forEach((row,ri)=>{
       const tr=el('tr');
-      cols.forEach(col=>{const td=el('td');if(col.opts)td.appendChild(sel(col.opts,row[col.k],v=>{row[col.k]=v;}));else td.appendChild(inp(row[col.k],col.ph||'',v=>{row[col.k]=v;}));tr.appendChild(td);});
-      const tdD=el('td');const db=el('button','del-btn');db.textContent='✕';db.onclick=()=>{rows.splice(ri,1);renderSpecs();as();};tdD.appendChild(db);tr.appendChild(tdD);tbody.appendChild(tr);
+      cols.forEach(col=>{const td=el('td');if(col.opts)td.appendChild(sel(col.opts,row[col.k],v=>{row[col.k]=v;changed('specs');}));else td.appendChild(inp(row[col.k],col.ph||'',v=>{row[col.k]=v;changed('specs');}));tr.appendChild(td);});
+      const tdD=el('td');const db=el('button','del-btn');db.textContent='✕';db.onclick=()=>{rows.splice(ri,1);renderSpecs();changed('specs');};tdD.appendChild(db);tr.appendChild(tdD);tbody.appendChild(tr);
     });
-    tbl.appendChild(tbody);card.appendChild(tbl);
-    const ab=el('button','add-btn');ab.textContent='+ Add row';ab.onclick=()=>{addFn();renderSpecs();as();};card.appendChild(ab);return card;
+    const addTr=el('tr');const addTd=el('td');addTd.colSpan=cols.length+1;
+    const addI=el('input','finp');addI.placeholder='+ Add row (press Enter)...';addI.style.fontSize='12px';
+    addI.onkeydown=e=>{if(e.key==='Enter'&&addI.value.trim()){rows.push(newRow(addI.value.trim()));addI.value='';renderSpecs();changed('specs');}};
+    addTd.appendChild(addI);addTr.appendChild(addTd);tbody.appendChild(addTr);
+    tbl.appendChild(tbody);card.appendChild(tbl);return card;
   }
-  c.appendChild(spTable('Robot Capabilities',sp.caps,[{lbl:'Capability',k:'name',ph:'Capability...'},{lbl:'Description',k:'desc',ph:'Description...'},{lbl:'By When',k:'when',opts:MS}],()=>sp.caps.push({name:'',desc:'',when:''})));
-  c.appendChild(spTable('Robot Qualities',sp.quals,[{lbl:'Quality',k:'name',ph:'Quality...'},{lbl:'Target',k:'target',ph:'Target...'},{lbl:'Notes',k:'notes',ph:'Notes...'}],()=>sp.quals.push({name:'',target:'',notes:''})));
-  c.appendChild(spTable('Programming Priorities',sp.prog,[{lbl:'Task',k:'task',ph:'Task...'},{lbl:'By When',k:'when',opts:MS},{lbl:'Notes',k:'notes',ph:'Notes...'}],()=>sp.prog.push({task:'',when:'',notes:''})));
+  c.appendChild(spT('Robot Capabilities',sp.caps,[{lbl:'Capability',k:'name',ph:'Capability...'},{lbl:'Description',k:'desc',ph:'Description...'},{lbl:'By When',k:'when',opts:MS}],v=>({name:v,desc:'',when:''})));
+  c.appendChild(spT('Robot Qualities',sp.quals,[{lbl:'Quality',k:'name',ph:'Quality...'},{lbl:'Target',k:'target',ph:'Target...'},{lbl:'Notes',k:'notes',ph:'Notes...'}],v=>({name:v,target:'',notes:''})));
+  c.appendChild(spT('Programming Priorities',sp.prog,[{lbl:'Task',k:'task',ph:'Task...'},{lbl:'By When',k:'when',opts:MS},{lbl:'Notes',k:'notes',ph:'Notes...'}],v=>({task:v,when:'',notes:''})));
 }
 
 // ── PROTOTYPE ──
 function renderProto(){
   const c=document.getElementById('proto-body');c.innerHTML='';
-  const pt=D.proto;
-  c.appendChild(el('div','info-box')).textContent='Be specific and detailed. State if CAD is required. Each task must be replicated in the EN with the end result.';
+  const pt=D.proto;if(!pt)return;
+  const ib=el('div','info-box');ib.textContent='Be specific and detailed. State if CAD is required. Each task must be replicated in the EN with the end result.';c.appendChild(ib);
   const card=el('div','card');const ct=el('div','ctitle');ct.textContent='Tasks';card.appendChild(ct);
   const tbl=el('table','dtbl');tbl.innerHTML='<thead><tr><th>Task</th><th>Lead</th><th>Group Members</th><th>Priority</th><th></th></tr></thead>';
   const tbody=el('tbody');
-  pt.tasks.forEach((task,ti)=>{
+  (pt.tasks||[]).forEach((task,ti)=>{
     const tr=el('tr');
-    const tdT=el('td');tdT.appendChild(txt(task.task,'Task description...',v=>{task.task=v;}));tr.appendChild(tdT);
-    const tdL=el('td');tdL.appendChild(sel(['',...D.wg.students],task.lead,v=>{task.lead=v;}));tr.appendChild(tdL);
-    const tdM=el('td');tdM.appendChild(inp(task.members,'Members...',v=>{task.members=v;}));tr.appendChild(tdM);
-    const tdP=el('td');tdP.appendChild(sel(PRI,task.pri,v=>{task.pri=v;}));tr.appendChild(tdP);
-    const tdD=el('td');const db=el('button','del-btn');db.textContent='✕';db.onclick=()=>{pt.tasks.splice(ti,1);renderProto();as();};tdD.appendChild(db);tr.appendChild(tdD);
+    const tdT=el('td');tdT.appendChild(txt(task.task,'Task description...',v=>{task.task=v;changed('proto');}));tr.appendChild(tdT);
+    const tdL=el('td');tdL.appendChild(sel(['',...(D.wg?.students||[])],task.lead,v=>{task.lead=v;changed('proto');}));tr.appendChild(tdL);
+    const tdM=el('td');tdM.appendChild(inp(task.members,'Members...',v=>{task.members=v;changed('proto');}));tr.appendChild(tdM);
+    const tdP=el('td');tdP.appendChild(sel(PRI,task.pri,v=>{task.pri=v;changed('proto');}));tr.appendChild(tdP);
+    const tdD=el('td');const db=el('button','del-btn');db.textContent='✕';db.onclick=()=>{pt.tasks.splice(ti,1);renderProto();changed('proto');};tdD.appendChild(db);tr.appendChild(tdD);
     tbody.appendChild(tr);
   });
-  tbl.appendChild(tbody);card.appendChild(tbl);
-  const ab=el('button','add-btn');ab.textContent='+ Add task';ab.onclick=()=>{pt.tasks.push({task:'',lead:'',members:'',pri:''});renderProto();as();};
-  card.appendChild(ab);c.appendChild(card);
+  // inline add
+  const addTr=el('tr');const addTd=el('td');addTd.colSpan=5;
+  const addI=el('input','finp');addI.placeholder='+ Add task description (press Enter)...';addI.style.fontSize='12px';
+  addI.onkeydown=e=>{if(e.key==='Enter'&&addI.value.trim()){pt.tasks.push({task:addI.value.trim(),lead:'',members:'',pri:''});addI.value='';renderProto();changed('proto');}};
+  addTd.appendChild(addI);addTr.appendChild(addTd);tbody.appendChild(addTr);
+  tbl.appendChild(tbody);card.appendChild(tbl);c.appendChild(card);
 }
 
 // ── EVAL ──
 function renderEval(){
   const c=document.getElementById('eval-body');c.innerHTML='';
-  const ev=D.eval;
+  const ev=D.eval;if(!ev)return;
 
-  function evTable(title,rows,keyfn,addFn){
+  function evT(title,rows,labelKey,labelHdr){
     const card=el('div','card');const ct=el('div','ctitle');ct.textContent=title;card.appendChild(ct);
-    const tbl=el('table','dtbl');tbl.innerHTML='<thead><tr><th>'+keyfn('header')+'</th><th>Baseline</th><th>Concept 1</th><th>Concept 2</th><th>Concept 3</th></tr></thead>';
+    const tbl=el('table','dtbl');tbl.innerHTML=`<thead><tr><th>${labelHdr}</th><th>Baseline</th><th>Concept 1</th><th>Concept 2</th><th>Concept 3</th></tr></thead>`;
     const tbody=el('tbody');
     rows.forEach((row,ri)=>{
       const tr=el('tr');
-      const td0=el('td');td0.appendChild(inp(row[keyfn('labelKey')],'...',v=>{row[keyfn('labelKey')]=v;}));tr.appendChild(td0);
-      ['base','c1','c2','c3'].forEach(k=>{const td=el('td');td.appendChild(inp(row[k],'—',v=>{row[k]=v;}));tr.appendChild(td);});
+      const td0=el('td');td0.appendChild(inp(row[labelKey],'...',v=>{row[labelKey]=v;changed('eval');}));tr.appendChild(td0);
+      ['base','c1','c2','c3'].forEach(k=>{const td=el('td');td.appendChild(inp(row[k],'—',v=>{row[k]=v;changed('eval');}));tr.appendChild(td);});
       tbody.appendChild(tr);
     });
-    tbl.appendChild(tbody);card.appendChild(tbl);
-    if(addFn){const ab=el('button','add-btn');ab.textContent='+ Add row';ab.onclick=()=>{addFn();renderEval();as();};card.appendChild(ab);}
-    return card;
+    const addTr=el('tr');const addTd=el('td');addTd.colSpan=5;
+    const addI=el('input','finp');addI.placeholder='+ Add row (press Enter)...';addI.style.fontSize='12px';
+    addI.onkeydown=e=>{if(e.key==='Enter'&&addI.value.trim()){const r={base:'',c1:'',c2:'',c3:''};r[labelKey]=addI.value.trim();rows.push(r);addI.value='';renderEval();changed('eval');}};
+    addTd.appendChild(addI);addTr.appendChild(addTd);tbody.appendChild(addTr);
+    tbl.appendChild(tbody);card.appendChild(tbl);return card;
   }
-  c.appendChild(evTable('Concept Overview',ev.overview,k=>k==='header'?'Criteria':k==='labelKey'?'c':'?',()=>ev.overview.push({c:'',base:'',c1:'',c2:'',c3:''})));
-  c.appendChild(evTable('Simplicity Level',ev.simplicity,k=>k==='header'?'Metric':k==='labelKey'?'m':'?',()=>ev.simplicity.push({m:'',base:'',c1:'',c2:'',c3:''})));
+  c.appendChild(evT('Concept Overview',ev.overview,'c','Criteria'));
+  c.appendChild(evT('Simplicity Level',ev.simplicity,'m','Metric'));
 
   const mCard=el('div','card');mCard.style.cssText='border-color:rgba(245,166,35,0.3);background:rgba(245,166,35,0.04);';
   const mTitle=el('div','ctitle');mTitle.textContent='Weighted Matrix';mCard.appendChild(mTitle);
-  const mDesc=el('p');mDesc.style.cssText='font-size:12px;color:var(--muted);margin-bottom:1rem;';mDesc.textContent='Assign value 1–5 for each concept. Higher is better. Totals auto-calculate.';mCard.appendChild(mDesc);
+  const mDesc=el('p');mDesc.style.cssText='font-size:12px;color:var(--muted);margin-bottom:1rem;';mDesc.textContent='Assign value 1–5. Higher is better. Totals auto-calculate.';mCard.appendChild(mDesc);
   ev.matrix.forEach((row,ri)=>{
     const mRow=el('div','mx-row');
-    const mLbl=el('div','mx-label');mLbl.appendChild(inp(row.lbl,'Criterion...',v=>{row.lbl=v;}));mRow.appendChild(mLbl);
+    const mLbl=el('div','mx-label');mLbl.appendChild(inp(row.lbl,'Criterion...',v=>{row.lbl=v;changed('eval');}));mRow.appendChild(mLbl);
     const mScores=el('div','mx-scores');
     ['base','c1','c2','c3'].forEach((k,ki)=>{
-      const box=el('div','mx-box');
-      const lbl=el('label');lbl.textContent=['Base','C1','C2','C3'][ki];
+      const box=el('div','mx-box');const lbl=el('label');lbl.textContent=['Base','C1','C2','C3'][ki];
       const i=el('input');i.type='number';i.min=0;i.max=5;i.className='mx-inp'+(ki>0?' c':'');i.value=row[k]||0;
-      i.oninput=()=>{row[k]=parseInt(i.value)||0;updateTotals();as();};
+      i.oninput=()=>{row[k]=parseInt(i.value)||0;updateTotals();changed('eval');};
       box.appendChild(lbl);box.appendChild(i);mScores.appendChild(box);
     });
     mRow.appendChild(mScores);
-    const mD=el('div','mx-desc');mD.appendChild(inp(row.desc,'Description...',v=>{row.desc=v;}));mRow.appendChild(mD);
+    const mD=el('div','mx-desc');mD.appendChild(inp(row.desc,'Description...',v=>{row.desc=v;changed('eval');}));mRow.appendChild(mD);
     mCard.appendChild(mRow);
   });
   const tots=el('div','mx-totals');tots.id='mx-totals';
   ['Base','C1','C2','C3'].forEach((lbl,i)=>{
-    const col=el('div','tot-col');
-    col.innerHTML=`<div class="tot-lbl">${lbl}</div><div class="tot-val${i>0?' c':''}" id="tot-${['base','c1','c2','c3'][i]}">0</div>`;
-    tots.appendChild(col);
+    const col=el('div','tot-col');col.innerHTML=`<div class="tot-lbl">${lbl}</div><div class="tot-val${i>0?' c':''}" id="tot-${['base','c1','c2','c3'][i]}">0</div>`;tots.appendChild(col);
   });
   mCard.appendChild(tots);c.appendChild(mCard);
   updateTotals();
 }
 
 function updateTotals(){
+  if(!D.eval?.matrix)return;
   ['base','c1','c2','c3'].forEach(k=>{
     const s=D.eval.matrix.reduce((a,r)=>a+(parseInt(r[k])||0),0);
     const e=document.getElementById('tot-'+k);if(e)e.textContent=s;
   });
+}
+
+// ── ADMIN PANEL ──
+async function renderAdmin(){
+  if(!isAdmin)return;
+  const c=document.getElementById('roles-body');c.innerHTML='';
+  const{data:roles}=await sb.from('user_roles').select('*').order('created_at');
+  if(!roles?.length){c.innerHTML='<div style="color:var(--muted);font-size:13px;padding:0.5rem 0;">No additional admin roles yet.</div>';return;}
+  roles.forEach(r=>{
+    const row=el('div','role-row');
+    const email=el('div','role-email');email.textContent=r.email;
+    const badge=el('span','role-badge '+(r.role==='admin'?'admin':'member'));badge.textContent=r.role;
+    const actBtn=el('button','role-act-btn');
+    actBtn.textContent=r.role==='admin'?'Revoke Admin':'Make Admin';
+    actBtn.onclick=async()=>{
+      const newRole=r.role==='admin'?'member':'admin';
+      await sb.from('user_roles').update({role:newRole}).eq('id',r.id);
+      renderAdmin();showToast('Role updated','saved');
+    };
+    row.appendChild(email);row.appendChild(badge);row.appendChild(actBtn);c.appendChild(row);
+  });
+}
+
+async function promoteUser(){
+  const email=document.getElementById('promote-email').value.trim().toLowerCase();
+  if(!email)return;
+  await sb.from('user_roles').upsert({email,role:'admin',granted_by:user.email},{onConflict:'email'});
+  document.getElementById('promote-email').value='';
+  renderAdmin();showToast('User promoted to admin','saved');
 }
 
 window.addEventListener('DOMContentLoaded',()=>{
