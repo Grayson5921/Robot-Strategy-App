@@ -4,1068 +4,585 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>6369 | Robot Strategy Worksheet 2026</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0d0f14; --bg2: #13161e; --bg3: #1a1e28;
-    --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.14);
-    --accent: #e63a2e; --accent2: #ff6b5b; --gold: #f5a623;
-    --text: #e8eaf0; --muted: #7a8099; --dim: #4a5068;
-    --green: #2ecc71; --blue: #3a8ef5; --radius: 6px;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: 'Barlow', sans-serif; font-size: 15px; line-height: 1.6; min-height: 100vh; }
-
-  /* HEADER */
-  .site-header { background: var(--bg2); border-bottom: 1px solid var(--border2); padding: 0 2rem; display: flex; align-items: center; gap: 1.5rem; height: 60px; position: sticky; top: 0; z-index: 100; }
-  .logo { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 10px; }
-  .logo-badge { background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 3px; letter-spacing: 0.05em; }
-  .header-divider { width: 1px; height: 28px; background: var(--border2); }
-  .header-sub { font-size: 13px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; flex: 1; }
-
-  /* ADMIN UI */
-  .admin-btn { background: none; border: 1px solid var(--border2); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 11px; padding: 5px 12px; border-radius: 4px; cursor: pointer; letter-spacing: 0.06em; transition: all 0.15s; }
-  .admin-btn:hover { border-color: var(--accent); color: var(--accent2); }
-  .admin-btn.active { background: rgba(230,58,46,0.15); border-color: var(--accent); color: var(--accent2); }
-  .admin-badge { display: none; background: rgba(230,58,46,0.15); border: 1px solid var(--accent); color: var(--accent2); font-family: 'IBM Plex Mono', monospace; font-size: 11px; padding: 4px 10px; border-radius: 3px; letter-spacing: 0.06em; align-items: center; gap: 6px; }
-  .admin-badge.show { display: flex; }
-  .admin-dot { width: 6px; height: 6px; background: var(--accent2); border-radius: 50%; animation: pulse 1.5s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-
-  /* MODAL */
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
-  .modal-overlay.show { display: flex; }
-  .modal { background: var(--bg2); border: 1px solid var(--border2); border-radius: 10px; padding: 2rem; width: 360px; }
-  .modal-title { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
-  .modal-sub { font-size: 13px; color: var(--muted); margin-bottom: 1.5rem; }
-  .modal-input { width: 100%; background: var(--bg3); border: 1px solid var(--border2); border-radius: 4px; color: var(--text); font-family: 'IBM Plex Mono', monospace; font-size: 14px; padding: 10px 12px; margin-bottom: 0.75rem; }
-  .modal-input:focus { outline: none; border-color: var(--accent); }
-  .modal-btn { width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 4px; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.06em; padding: 10px; cursor: pointer; text-transform: uppercase; }
-  .modal-btn:hover { background: var(--accent2); }
-  .modal-err { color: var(--accent2); font-size: 12px; font-family: 'IBM Plex Mono', monospace; margin-bottom: 0.75rem; display: none; }
-  .modal-err.show { display: block; }
-  .modal-cancel { display: block; text-align: center; margin-top: 0.75rem; font-size: 13px; color: var(--muted); cursor: pointer; }
-  .modal-cancel:hover { color: var(--text); }
-
-  /* EDIT TOAST */
-  .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--green); color: #0a2a15; font-family: 'IBM Plex Mono', monospace; font-size: 12px; padding: 8px 16px; border-radius: 4px; z-index: 999; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
-  .toast.show { opacity: 1; }
-
-  /* ADMIN EDIT BAR */
-  .admin-bar { display: none; background: rgba(230,58,46,0.08); border-bottom: 1px solid rgba(230,58,46,0.2); padding: 8px 2rem; font-size: 12px; color: var(--accent2); font-family: 'IBM Plex Mono', monospace; }
-  .admin-bar.show { display: flex; align-items: center; gap: 1rem; }
-
-  /* TABS */
-  .tab-nav { background: var(--bg2); border-bottom: 1px solid var(--border); display: flex; overflow-x: auto; scrollbar-width: none; padding: 0 2rem; }
-  .tab-nav::-webkit-scrollbar { display: none; }
-  .tab-btn { padding: 14px 18px; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; transition: color 0.15s, border-color 0.15s; }
-  .tab-btn:hover { color: var(--text); }
-  .tab-btn.active { color: var(--accent2); border-bottom-color: var(--accent); }
-  .tab-content { display: none; padding: 2rem; max-width: 1100px; margin: 0 auto; }
-  .tab-content.active { display: block; }
-
-  /* SECTION */
-  .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
-  .section-tag { font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 500; color: var(--accent2); background: rgba(230,58,46,0.12); padding: 3px 8px; border-radius: 3px; letter-spacing: 0.08em; }
-  .section-title { font-family: 'Barlow Condensed', sans-serif; font-size: 26px; font-weight: 700; color: var(--text); letter-spacing: 0.01em; }
-  .section-desc { color: var(--muted); font-size: 14px; margin-top: 4px; }
-
-  /* CARDS */
-  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.5rem; margin-bottom: 1rem; }
-  .card-title { font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent2); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 8px; }
-  .card-title::before { content: ''; display: inline-block; width: 3px; height: 14px; background: var(--accent); border-radius: 2px; }
-
-  /* GRID */
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
-  @media (max-width: 768px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } .tab-content { padding: 1rem; } }
-
-  /* CHECKLIST */
-  .checklist { list-style: none; }
-  .checklist li { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
-  .checklist li:last-child { border-bottom: none; }
-  .check-icon { width: 18px; height: 18px; border-radius: 3px; border: 1px solid var(--border2); background: var(--bg3); flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--green); cursor: pointer; }
-  .check-icon.done { background: rgba(46,204,113,0.1); border-color: var(--green); }
-  .check-label { flex: 1; line-height: 1.4; }
-  .check-label.done { color: var(--muted); text-decoration: line-through; }
-  .check-person { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--gold); background: rgba(245,166,35,0.1); padding: 2px 6px; border-radius: 3px; white-space: nowrap; align-self: flex-start; }
-  .phase-label { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); background: rgba(245,166,35,0.1); padding: 4px 10px; border-radius: 3px; display: inline-block; margin: 1.25rem 0 0.75rem; }
-
-  /* TABLE */
-  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  .data-table th { font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border2); }
-  .data-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; }
-  .data-table tr:last-child td { border-bottom: none; }
-  .data-table tr:hover td { background: rgba(255,255,255,0.02); }
-
-  /* BADGES */
-  .badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 3px; font-family: 'IBM Plex Mono', monospace; }
-  .badge-red { background: rgba(230,58,46,0.15); color: var(--accent2); }
-  .badge-gold { background: rgba(245,166,35,0.15); color: var(--gold); }
-  .badge-blue { background: rgba(58,142,245,0.15); color: var(--blue); }
-  .badge-green { background: rgba(46,204,113,0.15); color: var(--green); }
-
-  /* CHIP */
-  .chip { display: inline-block; background: var(--bg3); border: 1px solid var(--border2); border-radius: 100px; padding: 3px 10px; font-size: 12px; color: var(--text); margin: 2px; }
-
-  /* SWOT */
-  .swot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
-  .swot-cell { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; min-height: 120px; }
-  .swot-label { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem; }
-  .swot-cell.S .swot-label { color: var(--green); }
-  .swot-cell.W .swot-label { color: var(--accent2); }
-  .swot-cell.O .swot-label { color: var(--blue); }
-  .swot-cell.T .swot-label { color: var(--gold); }
-
-  /* CPM STATS */
-  .cpm-stat { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; text-align: center; }
-  .cpm-stat-val { font-family: 'Barlow Condensed', sans-serif; font-size: 32px; font-weight: 700; color: var(--accent2); }
-  .cpm-stat-label { font-size: 12px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; margin-top: 2px; }
-
-  /* MATRIX */
-  .matrix-row { display: flex; align-items: center; gap: 1rem; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
-  .matrix-row:last-child { border-bottom: none; }
-  .matrix-label { flex: 1; color: var(--text); }
-  .matrix-score { width: 36px; height: 36px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; font-family: 'IBM Plex Mono', monospace; background: rgba(245,166,35,0.12); color: var(--gold); border: 1px solid rgba(245,166,35,0.3); }
-  .matrix-desc { color: var(--muted); font-size: 12px; flex: 2; }
-
-  /* README */
-  .readme-block { background: var(--bg2); border-left: 3px solid var(--accent); border-radius: 0 var(--radius) var(--radius) 0; padding: 1rem 1.5rem; margin-bottom: 1rem; }
-  .readme-head { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent2); margin-bottom: 0.5rem; }
-  .readme-list { list-style: none; }
-  .readme-list li { padding: 4px 0; font-size: 14px; color: var(--muted); padding-left: 1rem; position: relative; }
-  .readme-list li::before { content: '→'; position: absolute; left: 0; color: var(--dim); font-size: 12px; }
-
-  /* INFO BOX */
-  .info-box { background: rgba(58,142,245,0.08); border: 1px solid rgba(58,142,245,0.2); border-radius: var(--radius); padding: 0.75rem 1rem; font-size: 13px; color: var(--blue); margin-bottom: 1rem; }
-
-  /* ── EDITABLE FIELDS ── */
-  /* Any element with [data-key] becomes editable in admin mode */
-  [data-key] { position: relative; transition: outline 0.15s; border-radius: 3px; }
-  body.admin-mode [data-key] { outline: 1px dashed rgba(230,58,46,0.4); cursor: text; }
-  body.admin-mode [data-key]:hover { outline: 1px dashed var(--accent2); background: rgba(230,58,46,0.05); }
-  body.admin-mode [data-key]:focus { outline: 2px solid var(--accent); background: rgba(230,58,46,0.08); }
-  [data-key]:empty::before { content: attr(data-placeholder); color: var(--dim); font-style: italic; font-size: 12px; }
-
-  /* editable checklist row */
-  body.admin-mode .checklist li .check-label { cursor: text; }
-
-  /* CHECKBOX in admin mode */
-  body.admin-mode .check-icon { outline: 1px dashed rgba(46,204,113,0.5); }
-
-  /* add row buttons (admin only) */
-  .add-row-btn { display: none; background: none; border: 1px dashed var(--dim); border-radius: 4px; color: var(--dim); font-size: 12px; font-family: 'IBM Plex Mono', monospace; padding: 5px 12px; cursor: pointer; margin-top: 6px; width: 100%; text-align: center; transition: all 0.15s; }
-  .add-row-btn:hover { border-color: var(--accent2); color: var(--accent2); }
-  body.admin-mode .add-row-btn { display: block; }
-
-  /* delete row (admin only) */
-  .del-row { display: none; cursor: pointer; color: var(--dim); font-size: 12px; padding: 0 4px; flex-shrink: 0; }
-  .del-row:hover { color: var(--accent2); }
-  body.admin-mode .del-row { display: inline; }
-
-  /* INLINE SCORE EDITOR */
-  body.admin-mode .matrix-score { cursor: pointer; }
-  body.admin-mode .matrix-score:hover { border-color: var(--accent); }
-
-  /* FIELD group for forms */
-  .field-group { margin-bottom: 1rem; }
-  .field-label { font-size: 11px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px; }
-  .edit-field { background: var(--bg3); border: 1px solid var(--border2); border-radius: 4px; color: var(--text); font-family: 'Barlow', sans-serif; font-size: 13px; padding: 6px 10px; width: 100%; resize: vertical; }
-  .edit-field:focus { outline: none; border-color: var(--accent); }
+:root{--bg:#0d0f14;--bg2:#13161e;--bg3:#1a1e28;--border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);--accent:#e63a2e;--accent2:#ff6b5b;--gold:#f5a623;--text:#e8eaf0;--muted:#7a8099;--dim:#4a5068;--green:#2ecc71;--blue:#3a8ef5;--radius:6px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;line-height:1.6;min-height:100vh;}
+#auth-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;}
+.auth-card{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:2.5rem;width:340px;text-align:center;}
+.auth-logo{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;margin-bottom:0.25rem;}
+.auth-logo span{background:var(--accent);color:#fff;padding:2px 8px;border-radius:3px;margin-right:8px;font-size:16px;}
+.auth-sub{color:var(--muted);font-size:13px;margin-bottom:2rem;}
+.google-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:#fff;color:#333;border:none;border-radius:6px;padding:12px 20px;font-size:14px;font-weight:600;cursor:pointer;transition:box-shadow 0.15s;}
+.google-btn:hover{box-shadow:0 2px 12px rgba(0,0,0,0.3);}
+.google-btn svg{width:20px;height:20px;flex-shrink:0;}
+.auth-note{color:var(--dim);font-size:11px;font-family:'IBM Plex Mono',monospace;margin-top:1rem;}
+#app{display:none;}
+.site-header{background:var(--bg2);border-bottom:1px solid var(--border2);padding:0 1.5rem;display:flex;align-items:center;gap:1rem;height:60px;position:sticky;top:0;z-index:100;}
+.logo{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;display:flex;align-items:center;gap:8px;white-space:nowrap;}
+.logo-badge{background:var(--accent);color:#fff;font-size:11px;padding:2px 7px;border-radius:3px;font-weight:700;}
+.hdr-div{width:1px;height:28px;background:var(--border2);}
+.hdr-user{font-size:12px;color:var(--muted);font-family:'IBM Plex Mono',monospace;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.admin-badge{background:rgba(230,58,46,0.15);border:1px solid var(--accent);color:var(--accent2);font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 10px;border-radius:3px;display:none;align-items:center;gap:6px;white-space:nowrap;}
+.admin-badge.show{display:flex;}
+.adot{width:6px;height:6px;background:var(--accent2);border-radius:50%;animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.hdr-btn{background:none;border:1px solid var(--border2);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px;padding:5px 10px;border-radius:4px;cursor:pointer;white-space:nowrap;}
+.hdr-btn:hover{border-color:var(--accent);color:var(--accent2);}
+.admin-bar{background:rgba(230,58,46,0.07);border-bottom:1px solid rgba(230,58,46,0.2);padding:8px 1.5rem;display:none;align-items:center;gap:1rem;flex-wrap:wrap;}
+.admin-bar.show{display:flex;}
+.admin-bar label{font-size:12px;color:var(--accent2);font-family:'IBM Plex Mono',monospace;}
+.user-sel{background:var(--bg3);border:1px solid rgba(230,58,46,0.3);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:12px;padding:4px 10px;border-radius:4px;cursor:pointer;}
+.tab-nav{background:var(--bg2);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;scrollbar-width:none;padding:0 1.5rem;}
+.tab-nav::-webkit-scrollbar{display:none;}
+.tab-btn{padding:13px 15px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;transition:color 0.15s,border-color 0.15s;}
+.tab-btn:hover{color:var(--text);}
+.tab-btn.active{color:var(--accent2);border-bottom-color:var(--accent);}
+.tab-content{display:none;padding:1.5rem;max-width:1100px;margin:0 auto;}
+.tab-content.active{display:block;}
+.sec-hdr{display:flex;align-items:flex-start;gap:10px;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid var(--border);}
+.sec-tag{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--accent2);background:rgba(230,58,46,0.12);padding:3px 8px;border-radius:3px;letter-spacing:0.08em;white-space:nowrap;margin-top:4px;}
+.sec-title{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:700;}
+.sec-desc{color:var(--muted);font-size:13px;margin-top:3px;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem 1.5rem;margin-bottom:1rem;}
+.ctitle{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent2);margin-bottom:0.75rem;display:flex;align-items:center;gap:8px;}
+.ctitle::before{content:'';display:inline-block;width:3px;height:13px;background:var(--accent);border-radius:2px;flex-shrink:0;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
+@media(max-width:700px){.grid2,.grid3{grid-template-columns:1fr;}.tab-content{padding:1rem;}}
+.phase-lbl{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);background:rgba(245,166,35,0.1);padding:4px 10px;border-radius:3px;display:inline-block;margin:1.25rem 0 0.75rem;}
+.checklist{list-style:none;}
+.checklist li{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.checklist li:last-child{border-bottom:none;}
+.chk{width:18px;height:18px;border-radius:3px;border:1px solid var(--border2);background:var(--bg3);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--green);cursor:pointer;}
+.chk.done{background:rgba(46,204,113,0.1);border-color:var(--green);}
+.chk-lbl{flex:1;line-height:1.4;}
+.chk-lbl.done{color:var(--muted);text-decoration:line-through;}
+.dtbl{width:100%;border-collapse:collapse;font-size:13px;}
+.dtbl th{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;padding:8px 10px;text-align:left;border-bottom:1px solid var(--border2);}
+.dtbl td{padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle;}
+.dtbl tr:last-child td{border-bottom:none;}
+.fsel{background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:'Barlow',sans-serif;font-size:12px;padding:4px 7px;width:100%;cursor:pointer;}
+.fsel:focus{outline:none;border-color:var(--accent);}
+.fsel option{background:var(--bg2);}
+.finp{background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:'Barlow',sans-serif;font-size:13px;padding:5px 8px;width:100%;}
+.finp:focus{outline:none;border-color:var(--accent);}
+.ftxt{background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:'Barlow',sans-serif;font-size:13px;padding:5px 8px;width:100%;resize:vertical;min-height:54px;line-height:1.5;}
+.ftxt:focus{outline:none;border-color:var(--accent);}
+.notes-sec{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem 1.5rem;margin-top:1.5rem;}
+.notes-ttl{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem;}
+.notes-area{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:'Barlow',sans-serif;font-size:13px;padding:10px 12px;resize:vertical;min-height:70px;line-height:1.6;}
+.notes-area:focus{outline:none;border-color:var(--accent);}
+.add-btn{background:none;border:1px dashed var(--dim);border-radius:4px;color:var(--dim);font-size:12px;font-family:'IBM Plex Mono',monospace;padding:5px 12px;cursor:pointer;margin-top:6px;width:100%;text-align:center;transition:all 0.15s;}
+.add-btn:hover{border-color:var(--accent2);color:var(--accent2);}
+.del-btn{background:none;border:none;color:var(--dim);cursor:pointer;font-size:12px;padding:2px 5px;border-radius:3px;}
+.del-btn:hover{color:var(--accent2);}
+.swot-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:0.75rem;}
+.swot-cell{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;}
+.swot-lbl{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.5rem;}
+.swot-cell.S .swot-lbl{color:var(--green);}
+.swot-cell.W .swot-lbl{color:var(--accent2);}
+.swot-cell.O .swot-lbl{color:var(--blue);}
+.swot-cell.T .swot-lbl{color:var(--gold);}
+.cpm-stat{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;text-align:center;}
+.cpm-val{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:700;color:var(--accent2);}
+.cpm-lbl{font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-top:2px;}
+.mx-row{display:flex;align-items:center;gap:1rem;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.mx-row:last-child{border-bottom:none;}
+.mx-label{flex:2;color:var(--text);}
+.mx-scores{display:flex;gap:5px;flex-shrink:0;}
+.mx-box{text-align:center;}
+.mx-box label{font-size:10px;color:var(--dim);font-family:'IBM Plex Mono',monospace;display:block;margin-bottom:1px;}
+.mx-inp{width:44px;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--gold);font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:700;padding:3px;text-align:center;}
+.mx-inp:focus{outline:none;border-color:var(--accent);}
+.mx-inp.c{color:var(--blue);border-color:rgba(58,142,245,0.3);background:rgba(58,142,245,0.05);}
+.mx-desc{flex:3;color:var(--muted);font-size:12px;}
+.mx-totals{display:flex;justify-content:flex-end;gap:1.5rem;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);}
+.tot-col{text-align:center;}
+.tot-lbl{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--muted);}
+.tot-val{font-size:22px;font-weight:700;color:var(--gold);}
+.tot-val.c{color:var(--blue);}
+.info-box{background:rgba(58,142,245,0.08);border:1px solid rgba(58,142,245,0.2);border-radius:var(--radius);padding:0.75rem 1rem;font-size:13px;color:var(--blue);margin-bottom:1rem;}
+.rl-block{background:var(--bg2);border-left:3px solid var(--accent);border-radius:0 var(--radius) var(--radius) 0;padding:1rem 1.5rem;margin-bottom:1rem;}
+.rl-head{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent2);margin-bottom:0.4rem;}
+.rl-list{list-style:none;}
+.rl-list li{padding:3px 0 3px 1rem;font-size:13px;color:var(--muted);position:relative;}
+.rl-list li::before{content:'→';position:absolute;left:0;color:var(--dim);font-size:11px;top:5px;}
+.pool{display:flex;flex-wrap:wrap;gap:5px;padding:8px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;min-height:40px;}
+.s-chip{display:inline-flex;align-items:center;gap:4px;background:var(--bg2);border:1px solid var(--border2);border-radius:100px;padding:3px 10px;font-size:12px;cursor:pointer;transition:all 0.15s;}
+.s-chip:hover{border-color:var(--blue);color:var(--blue);}
+.m-tag{display:inline-flex;align-items:center;gap:4px;background:rgba(58,142,245,0.1);border:1px solid rgba(58,142,245,0.3);border-radius:100px;padding:2px 8px;font-size:11px;color:var(--blue);margin:2px;}
+.m-tag .rm{cursor:pointer;color:var(--dim);font-size:10px;}
+.m-tag .rm:hover{color:var(--accent2);}
+.s-add-row{display:flex;gap:6px;margin-top:6px;}
+.s-inp{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:'Barlow',sans-serif;font-size:12px;padding:5px 8px;}
+.s-inp:focus{outline:none;border-color:var(--accent);}
+.sm-btn{background:none;border:1px solid var(--border2);color:var(--muted);font-size:11px;padding:4px 10px;border-radius:4px;cursor:pointer;}
+.sm-btn:hover{border-color:var(--accent2);color:var(--accent2);}
+.save-toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--green);color:#0a2a15;font-family:'IBM Plex Mono',monospace;font-size:12px;padding:8px 16px;border-radius:4px;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none;}
+.save-toast.show{opacity:1;}
+.loading-msg{display:flex;align-items:center;justify-content:center;height:150px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:13px;}
 </style>
 </head>
 <body>
 
-<!-- LOGIN MODAL -->
-<div class="modal-overlay" id="loginModal">
-  <div class="modal">
-    <div class="modal-title">Admin Login</div>
-    <div class="modal-sub">Enter password to enable editing mode.</div>
-    <div class="modal-err" id="loginErr">Incorrect password.</div>
-    <input class="modal-input" type="password" id="adminPw" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()">
-    <button class="modal-btn" onclick="doLogin()">Sign In</button>
-    <span class="modal-cancel" onclick="closeLogin()">Cancel</span>
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo"><span>6369</span>MERCENARY ROBOTICS</div>
+    <div class="auth-sub">Robot Strategy Worksheet · 2026</div>
+    <button class="google-btn" onclick="signInGoogle()">
+      <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Sign in with Google
+    </button>
+    <div class="auth-note">Your worksheet is private to your account</div>
   </div>
 </div>
 
-<!-- TOAST -->
-<div class="toast" id="toast">Saved</div>
+<div id="app">
+  <header class="site-header">
+    <div class="logo"><span class="logo-badge">6369</span>MERCENARY ROBOTICS</div>
+    <div class="hdr-div"></div>
+    <div class="hdr-user" id="hdr-email"></div>
+    <div class="admin-badge" id="admin-badge"><span class="adot"></span>ADMIN</div>
+    <button class="hdr-btn" onclick="signOut()">Sign Out</button>
+  </header>
+  <div class="admin-bar" id="admin-bar">
+    <label>Viewing:</label>
+    <select class="user-sel" id="user-sel" onchange="switchUser(this.value)"><option value="">All users...</option></select>
+    <span style="font-size:11px;color:var(--dim);font-family:'IBM Plex Mono',monospace;" id="admin-viewing"></span>
+  </div>
+  <nav class="tab-nav">
+    <button class="tab-btn active" onclick="showTab('readme',this)">README</button>
+    <button class="tab-btn" onclick="showTab('plan',this)">The Plan</button>
+    <button class="tab-btn" onclick="showTab('wg',this)">Work Groups</button>
+    <button class="tab-btn" onclick="showTab('gr',this)">Game Rules</button>
+    <button class="tab-btn" onclick="showTab('cpm',this)">CPM</button>
+    <button class="tab-btn" onclick="showTab('strat',this)">Strategy</button>
+    <button class="tab-btn" onclick="showTab('specs',this)">Robot Specs</button>
+    <button class="tab-btn" onclick="showTab('proto',this)">Prototype</button>
+    <button class="tab-btn" onclick="showTab('eval',this)">Eval Concepts</button>
+  </nav>
 
-<header class="site-header">
-  <div class="logo"><span class="logo-badge">6369</span>MERCENARY ROBOTICS</div>
-  <div class="header-divider"></div>
-  <div class="header-sub">Strategy Worksheet · 2026</div>
-  <div class="admin-badge" id="adminBadge"><span class="admin-dot"></span>ADMIN MODE</div>
-  <button class="admin-btn" id="adminToggleBtn" onclick="handleAdminBtn()">Admin</button>
-</header>
+  <div id="tab-readme" class="tab-content active">
+    <div class="sec-hdr"><div class="sec-tag">OVERVIEW</div><div><div class="sec-title">Strategy &amp; Design Worksheet</div><div class="sec-desc">Kickoff document · 6369 / 6773 · Season 2026</div></div></div>
+    <div class="rl-block"><div class="rl-head">Purpose</div><ul class="rl-list"><li>Serves as the kickoff document for the engineering notebook</li><li>Gives Captains a tool to organize the efforts of a large FRC team</li><li>Creates a process that incorporates lessons learned</li><li>Facilitates communication between coaches, mentors, student leaders and team members</li><li>Ensures teams follow a top-down design methodology</li></ul></div>
+    <div class="rl-block"><div class="rl-head">Objectives</div><ul class="rl-list"><li>Follow the engineering design process</li><li>Analyze game play strategies as one team (Define → Research phase)</li><li>Independently develop robot specs and share concepts</li><li>Prototype together and share findings</li><li>Evaluate and select separate design concepts</li></ul></div>
+    <div class="rl-block"><div class="rl-head">Instructions</div><ul class="rl-list"><li>Use worksheet as a task guide — fill in the blanks as you go</li><li>Use separate worksheets for each team, sharing game rules and strat analysis results</li><li>Adjust as needed. Not all tools need to be used.</li><li>Fill in lessons learned throughout the season</li></ul></div>
+    <div class="grid3" style="margin-top:1.5rem;">
+      <div class="card" style="text-align:center;"><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:4px;">TEAMS</div><div style="font-size:24px;font-weight:700;color:var(--accent2);">6369 / 6773</div></div>
+      <div class="card" style="text-align:center;"><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:4px;">SEASON</div><div style="font-size:24px;font-weight:700;color:var(--gold);">2026</div></div>
+      <div class="card" style="text-align:center;"><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:4px;">METHOD</div><div style="font-size:14px;font-weight:600;color:var(--blue);padding-top:5px;">Top-Down Design</div></div>
+    </div>
+  </div>
 
-<div class="admin-bar" id="adminBar">
-  ✦ Admin mode active — click any field to edit. Changes save automatically.
-  <button onclick="doLogout()" style="background:none;border:1px solid var(--accent);color:var(--accent2);font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 10px;border-radius:3px;cursor:pointer;margin-left:auto;">Log Out</button>
+  <div id="tab-plan" class="tab-content"><div id="plan-body"><div class="loading-msg">Loading...</div></div><div class="notes-sec"><div class="notes-ttl">Notes</div><textarea class="notes-area" id="n-plan" placeholder="Notes for The Plan..." oninput="as()"></textarea></div></div>
+  <div id="tab-wg" class="tab-content"><div id="wg-body"><div class="loading-msg">Loading...</div></div></div>
+  <div id="tab-gr" class="tab-content"><div id="gr-body"><div class="loading-msg">Loading...</div></div><div class="notes-sec"><div class="notes-ttl">Notes</div><textarea class="notes-area" id="n-gr" placeholder="Notes for Game Rules..." oninput="as()"></textarea></div></div>
+  <div id="tab-cpm" class="tab-content"><div id="cpm-body"><div class="loading-msg">Loading...</div></div><div class="notes-sec"><div class="notes-ttl">Notes</div><textarea class="notes-area" id="n-cpm" placeholder="Notes for CPM Analysis..." oninput="as()"></textarea></div></div>
+  <div id="tab-strat" class="tab-content"><div id="strat-body"><div class="loading-msg">Loading...</div></div><div class="notes-sec"><div class="notes-ttl">Notes</div><textarea class="notes-area" id="n-strat" placeholder="Notes for Strategy..." oninput="as()"></textarea></div></div>
+  <div id="tab-specs" class="tab-content"><div id="specs-body"><div class="loading-msg">Loading...</div></div><div class="notes-sec"><div class="notes-ttl">Notes</div><textarea class="notes-area" id="n-specs" placeholder="Notes for Robot Specs..." oninput="as()"></textarea></div></div>
+  <div id="tab-proto" class="tab-content"><div id="proto-body"><div class="loading-msg">Loading...</div></div><div class="notes-sec"><div class="notes-ttl">Notes</div><textarea class="notes-area" id="n-proto" placeholder="Notes for Prototyping..." oninput="as()"></textarea></div></div>
+  <div id="tab-eval" class="tab-content"><div id="eval-body"><div class="loading-msg">Loading...</div></div><div class="notes-sec"><div class="notes-ttl">Notes</div><textarea class="notes-area" id="n-eval" placeholder="Notes for Concept Evaluation..." oninput="as()"></textarea></div></div>
 </div>
 
-<nav class="tab-nav">
-  <button class="tab-btn active" onclick="showTab('readme',this)">README</button>
-  <button class="tab-btn" onclick="showTab('plan',this)">The Plan</button>
-  <button class="tab-btn" onclick="showTab('workgroups',this)">Work Groups</button>
-  <button class="tab-btn" onclick="showTab('gamerules',this)">Game Rules</button>
-  <button class="tab-btn" onclick="showTab('cpm',this)">CPM Analysis</button>
-  <button class="tab-btn" onclick="showTab('strat',this)">Strat Analysis</button>
-  <button class="tab-btn" onclick="showTab('specs',this)">Robot Specs</button>
-  <button class="tab-btn" onclick="showTab('proto',this)">Prototype Tasks</button>
-  <button class="tab-btn" onclick="showTab('eval',this)">Evaluate Concepts</button>
-</nav>
-
-<!-- ============ README ============ -->
-<div id="tab-readme" class="tab-content active">
-  <div class="section-header"><div>
-    <div class="section-tag">OVERVIEW</div>
-    <div class="section-title">Strategy &amp; Design Worksheet</div>
-    <div class="section-desc">Kickoff document for engineering notebook — consolidates activities from kickoff through design concept selection.</div>
-  </div></div>
-
-  <div class="readme-block">
-    <div class="readme-head">Purpose</div>
-    <ul class="readme-list" id="readme-purpose">
-      <li><span class="del-row" onclick="delListItem(this)">✕</span> <span data-key="readme-p1" contenteditable="false" data-placeholder="Purpose item...">Serves as the kickoff document for the engineering notebook</span></li>
-      <li><span class="del-row" onclick="delListItem(this)">✕</span> <span data-key="readme-p2" contenteditable="false" data-placeholder="Purpose item...">Gives Captains a tool to organize the efforts of a large FRC team</span></li>
-      <li><span class="del-row" onclick="delListItem(this)">✕</span> <span data-key="readme-p3" contenteditable="false" data-placeholder="Purpose item...">Creates a process that incorporates lessons learned</span></li>
-      <li><span class="del-row" onclick="delListItem(this)">✕</span> <span data-key="readme-p4" contenteditable="false" data-placeholder="Purpose item...">Facilitates communication between coaches, mentors, student leaders and team members</span></li>
-      <li><span class="del-row" onclick="delListItem(this)">✕</span> <span data-key="readme-p5" contenteditable="false" data-placeholder="Purpose item...">Ensures teams follow a top-down design methodology to stay efficiently on track towards established goals</span></li>
-    </ul>
-    <button class="add-row-btn" onclick="addListItem('readme-purpose','readme-p')">+ Add item</button>
-  </div>
-
-  <div class="readme-block">
-    <div class="readme-head">Objectives</div>
-    <ul class="readme-list" id="readme-obj">
-      <li><span class="del-row" onclick="delListItem(this)">✕</span> <span data-key="readme-o1" contenteditable="false" data-placeholder="Objective...">Incorporate checklist steps that can be iterated based on lessons learned</span></li>
-      <li><span class="del-row" onclick="delListItem(this)">✕</span> <span data-key="readme-o2" contenteditable="false" data-placeholder="Objective...">Follow the engineering design process</span></li>
-      <li><span class="del-row" onclick="delListItem(this)">✕</span> <span data-key="readme-o3" contenteditable="false" data-placeholder="Objective...">Analyze game play strategies as one team (Define → Research phase)</span></li>
-      <li><span class="del-row" onclick="delListItem(this)">✕</span> <span data-key="readme-o4" contenteditable="false" data-placeholder="Objective...">Independently develop robot specs and share concepts</span></li>
-      <li><span class="del-row" onclick="delListItem(this)">✕</span> <span data-key="readme-o5" contenteditable="false" data-placeholder="Objective...">Prototype together and share findings</span></li>
-      <li><span class="del-row" onclick="delListItem(this)">✕</span> <span data-key="readme-o6" contenteditable="false" data-placeholder="Objective...">Evaluate and select separate design concepts</span></li>
-    </ul>
-    <button class="add-row-btn" onclick="addListItem('readme-obj','readme-o')">+ Add item</button>
-  </div>
-
-  <div class="readme-block">
-    <div class="readme-head">Instructions</div>
-    <ul class="readme-list" id="readme-inst">
-      <li><span class="del-row" onclick="delListItem(this)">✕</span> <span data-key="readme-i1" contenteditable="false" data-placeholder="Instruction...">Use worksheet as a task guide and fill in the blanks as you go, using the steps outlined in THE PLAN</span></li>
-      <li><span class="del-row" onclick="delListItem(this)">✕</span> <span data-key="readme-i2" contenteditable="false" data-placeholder="Instruction...">Use separate worksheets for each team, sharing game rules and strat analysis results</span></li>
-      <li><span class="del-row" onclick="delListItem(this)">✕</span> <span data-key="readme-i3" contenteditable="false" data-placeholder="Instruction...">Adjust as needed the steps outlined in The Plan</span></li>
-      <li><span class="del-row" onclick="delListItem(this)">✕</span> <span data-key="readme-i4" contenteditable="false" data-placeholder="Instruction...">Not all tools need to be used; add or skip as needed based on analytical needs</span></li>
-      <li><span class="del-row" onclick="delListItem(this)">✕</span> <span data-key="readme-i5" contenteditable="false" data-placeholder="Instruction...">Fill in lessons learned throughout the season</span></li>
-      <li><span class="del-row" onclick="delListItem(this)">✕</span> <span data-key="readme-i6" contenteditable="false" data-placeholder="Instruction...">Modify next season's worksheet based on lessons learned</span></li>
-    </ul>
-    <button class="add-row-btn" onclick="addListItem('readme-inst','readme-i')">+ Add item</button>
-  </div>
-
-  <div class="grid-3" style="margin-top:1.5rem;">
-    <div class="card" style="text-align:center;"><div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:4px;">TEAMS</div><div style="font-size:28px;font-weight:700;color:var(--accent2);" data-key="stat-teams" contenteditable="false">6369 / 6773</div></div>
-    <div class="card" style="text-align:center;"><div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:4px;">SEASON</div><div style="font-size:28px;font-weight:700;color:var(--gold);" data-key="stat-season" contenteditable="false">2026</div></div>
-    <div class="card" style="text-align:center;"><div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:4px;">METHODOLOGY</div><div style="font-size:16px;font-weight:600;color:var(--blue);padding-top:6px;" data-key="stat-method" contenteditable="false">Top-Down Design</div></div>
-  </div>
-</div>
-
-<!-- ============ THE PLAN ============ -->
-<div id="tab-plan" class="tab-content">
-  <div class="section-header"><div>
-    <div class="section-tag">CHECKLIST</div>
-    <div class="section-title">The Plan</div>
-    <div class="section-desc">Task guide from kickoff prep through concept selection. Follow in order. Click checkboxes to mark complete.</div>
-  </div></div>
-
-  <div class="info-box">This worksheet guides and documents strategy and design planning actions. All tabs are linked from this section.</div>
-
-  <div class="phase-label">Kickoff Prep</div>
-
-  <div class="card">
-    <div class="card-title">Assign Work Groups</div>
-    <ul class="checklist" id="cl-workgroups">
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-wg1" contenteditable="false">6369/6773 will split and work separately but share results</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-wg2" contenteditable="false">Update work groups tab</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-wg3" contenteditable="false">Assign table seating</span></li>
-    </ul>
-    <button class="add-row-btn" onclick="addCheckItem('cl-workgroups','plan-wg')">+ Add task</button>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Admin Prep <span class="check-person" data-key="plan-admin-owner" contenteditable="false">Team Captains</span></div>
-    <ul class="checklist" id="cl-adminprep">
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-ap1" contenteditable="false">Setup and test connection to Live Stream</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-ap2" contenteditable="false">Test mic</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-ap3" contenteditable="false">Setup group work tables</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-ap4" contenteditable="false">Distribute dry erase markers and erasers for workgroups</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-ap5" contenteditable="false">Build Google Form rules review worksheet</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-ap6" contenteditable="false">Make prototyping shopping list</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-ap7" contenteditable="false">Update links up top</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-ap8" contenteditable="false">Coordinate for computer access for brainstorming sessions</span></li>
-    </ul>
-    <button class="add-row-btn" onclick="addCheckItem('cl-adminprep','plan-ap')">+ Add task</button>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Watch Kickoff Stream <span class="check-person">Team Captains</span></div>
-    <ul class="checklist" id="cl-kickoff">
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-ks1" contenteditable="false">Watch x2 more times</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-ks2" contenteditable="false">Download game manual</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-ks3" contenteditable="false">Download and print field diagram</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-ks4" contenteditable="false">Make rules test with Google Form (steal from Citrus Circuit)</span></li>
-    </ul>
-    <button class="add-row-btn" onclick="addCheckItem('cl-kickoff','plan-ks')">+ Add task</button>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Kit of Parts &amp; Field Elements</div>
-    <ul class="checklist" id="cl-kit">
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-k1" contenteditable="false">Acquire Kit of Parts and inventory it</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-k2" contenteditable="false">Team Captains inventory and examine game pieces</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-k3" contenteditable="false">Download and print field element build instructions</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-k4" contenteditable="false">Determine which field elements to build</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-k5" contenteditable="false">Determine and order which field elements to purchase</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-k6" contenteditable="false">Determine what field element interim mock-ups are needed</span></li>
-    </ul>
-    <button class="add-row-btn" onclick="addCheckItem('cl-kit','plan-k')">+ Add task</button>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Setup Software</div>
-    <ul class="checklist" id="cl-sw">
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-sw1" contenteditable="false">Create and link Engineering Notebooks</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-sw2" contenteditable="false">Create and link Github for each team</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-sw3" contenteditable="false">Create and link OnShape document folder</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-sw4" contenteditable="false">Import Field and Gamepiece elements into OnShape</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-sw5" contenteditable="false">Create sketch/KCAD template with field/game elements</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-sw6" contenteditable="false">Setup Advantage Scope Field Simulator</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-sw7" contenteditable="false">Setup Excel Sheet for CPM Analysis</span></li>
-    </ul>
-    <button class="add-row-btn" onclick="addCheckItem('cl-sw','plan-sw')">+ Add task</button>
-  </div>
-
-  <div class="phase-label">Define the Problem</div>
-
-  <div class="card">
-    <div class="card-title">Analyze and Document Game Rules</div>
-    <ul class="checklist" id="cl-rules">
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-r1" contenteditable="false">Individually read manual in entirety</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-r2" contenteditable="false">Design Team fills in this spreadsheet, while working groups fill in group sheets</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-r3" contenteditable="false">Focus on requirements/constraints that affect robot design</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-r4" contenteditable="false">Review Pre-BOM needs to start ordering parts before stock runs out</span></li>
-    </ul>
-    <button class="add-row-btn" onclick="addCheckItem('cl-rules','plan-r')">+ Add task</button>
-  </div>
-
-  <div class="phase-label">Research</div>
-
-  <div class="card">
-    <div class="card-title">Analyze Strategies</div>
-    <ul class="checklist" id="cl-strat">
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-st1" contenteditable="false">Examine potential types of robot archetypes</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-st2" contenteditable="false">Evaluate Karthik's new CPM model</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-st3" contenteditable="false">Simulate gameplay and evaluate CPM and SWOT</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-st4" contenteditable="false">Examine potential Auton, Teleop, Endgame strategies from teams</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-st5" contenteditable="false">Analyze SWOT and its countermeasures</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-st6" contenteditable="false">Brainstorm programming solutions to aid drive team in gameplay</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-st7" contenteditable="false">Brainstorm general engineering solutions</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-st8" contenteditable="false">Steal from the best — collect media and links into the vault</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-st9" contenteditable="false">Watch field tour video and review strategies</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-st10" contenteditable="false">Start Engineering Notebook (EN) with decided game strategy</span></li>
-    </ul>
-    <button class="add-row-btn" onclick="addCheckItem('cl-strat','plan-st')">+ Add task</button>
-  </div>
-
-  <div class="phase-label">Generate Specifications</div>
-  <div class="card">
-    <div class="card-title">Identify Robot Specifications</div>
-    <ul class="checklist" id="cl-genspec">
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-gs1" contenteditable="false">Review rules and analysis and consolidate into desired specs</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-gs2" contenteditable="false">Document only must-do items</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-gs3" contenteditable="false">Identify prototyping and proof of concept needs</span></li>
-    </ul>
-    <button class="add-row-btn" onclick="addCheckItem('cl-genspec','plan-gs')">+ Add task</button>
-  </div>
-
-  <div class="phase-label">Develop &amp; Evaluate Concepts</div>
-  <div class="card">
-    <div class="card-title">Brainstorm &amp; Prototype</div>
-    <ul class="checklist" id="cl-brainstorm">
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-br1" contenteditable="false">Review OnShape ROEs to stay organized</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-br2" contenteditable="false">Sketch/KCAD in relation to field/game elements on both sides of robot</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-br3" contenteditable="false">Show geometrical proof against field/game elements</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-br4" contenteditable="false">Present concepts using Concept Slides</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-br5" contenteditable="false">Develop &amp; assign prototype/proof of concept tasks</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-br6" contenteditable="false">Evaluate concepts (Design Team Only) — choose 3</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-br7" contenteditable="false">Review Ri3D designs and collect details in the vault</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-br8" contenteditable="false">Assess Everybot / REVbot / WCPbot</span></li>
-    </ul>
-    <button class="add-row-btn" onclick="addCheckItem('cl-brainstorm','plan-br')">+ Add task</button>
-  </div>
-
-  <div class="phase-label">Choose Concept</div>
-  <div class="card">
-    <div class="card-title">Final Selection</div>
-    <ul class="checklist" id="cl-final">
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-f1" contenteditable="false">Choose concept, kitbot, or hybrid</span></li>
-      <li><span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="plan-f2" contenteditable="false">Update EN with Robot Concept and requirements/constraints</span></li>
-    </ul>
-    <button class="add-row-btn" onclick="addCheckItem('cl-final','plan-f')">+ Add task</button>
-  </div>
-</div>
-
-<!-- ============ GAME RULES ============ -->
-<div id="tab-gamerules" class="tab-content">
-  <div class="section-header"><div>
-    <div class="section-tag">RULES ANALYSIS</div>
-    <div class="section-title">Game Rules</div>
-    <div class="section-desc">Review game manual and record pertinent rules that drive robot design.</div>
-  </div></div>
-
-  <div class="card">
-    <div class="card-title">Intaking Locations</div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:1rem;" data-key="gr-intake-desc" contenteditable="false">Know where to intake game pieces, difficulty, and value from each location.</div>
-    <table class="data-table" id="tbl-intake">
-      <thead><tr><th>Location</th><th>Difficulty</th><th>Value</th></tr></thead>
-      <tbody id="tbody-intake">
-        <tr><td><span data-key="gr-il1" contenteditable="false" data-placeholder="Location name..."></span></td><td><span data-key="gr-id1" contenteditable="false" data-placeholder="Low/Med/High"></span></td><td><span data-key="gr-iv1" contenteditable="false" data-placeholder="Low/Med/High"></span></td></tr>
-        <tr><td><span data-key="gr-il2" contenteditable="false" data-placeholder="Location name..."></span></td><td><span data-key="gr-id2" contenteditable="false" data-placeholder="Low/Med/High"></span></td><td><span data-key="gr-iv2" contenteditable="false" data-placeholder="Low/Med/High"></span></td></tr>
-        <tr><td><span data-key="gr-il3" contenteditable="false" data-placeholder="Location name..."></span></td><td><span data-key="gr-id3" contenteditable="false" data-placeholder="Low/Med/High"></span></td><td><span data-key="gr-iv3" contenteditable="false" data-placeholder="Low/Med/High"></span></td></tr>
-      </tbody>
-    </table>
-    <button class="add-row-btn" onclick="addTableRow('tbody-intake',3,'gr-il,gr-id,gr-iv',['Location name...','Difficulty','Value'])">+ Add location</button>
-    <div style="margin-top:1rem;display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px;">
-      <div style="background:rgba(230,58,46,0.1);padding:6px 8px;border-radius:4px;color:var(--muted);">Hi Diff / Lo Val → <strong>Skip</strong></div>
-      <div style="background:rgba(245,166,35,0.1);padding:6px 8px;border-radius:4px;color:var(--muted);">Hi Diff / Hi Val → <strong>Consider</strong></div>
-      <div style="background:rgba(245,166,35,0.1);padding:6px 8px;border-radius:4px;color:var(--muted);">Lo Diff / Lo Val → <strong>Consider</strong></div>
-      <div style="background:rgba(46,204,113,0.1);padding:6px 8px;border-radius:4px;color:var(--muted);">Lo Diff / Hi Val → <strong>Must Do</strong></div>
-    </div>
-    <div style="margin-top:1rem;"><div class="field-label">What does this mean to us?</div><div data-key="gr-intake-takeaway" contenteditable="false" data-placeholder="Enter takeaway..." style="min-height:40px;padding:6px 0;font-size:13px;color:var(--muted);"></div></div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Ranking Points</div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:1rem;">RPs determine final ranking for playoffs — usually more important than raw points.</div>
-    <table class="data-table">
-      <thead><tr><th>Task</th><th>Points</th><th>Difficulty</th></tr></thead>
-      <tbody id="tbody-rp">
-        <tr><td><span data-key="gr-rp1t" contenteditable="false" data-placeholder="Task..."></span></td><td><span data-key="gr-rp1p" contenteditable="false" data-placeholder="Pts"></span></td><td><span data-key="gr-rp1d" contenteditable="false" data-placeholder="Diff"></span></td></tr>
-        <tr><td><span data-key="gr-rp2t" contenteditable="false" data-placeholder="Task..."></span></td><td><span data-key="gr-rp2p" contenteditable="false" data-placeholder="Pts"></span></td><td><span data-key="gr-rp2d" contenteditable="false" data-placeholder="Diff"></span></td></tr>
-        <tr><td><span data-key="gr-rp3t" contenteditable="false" data-placeholder="Task..."></span></td><td><span data-key="gr-rp3p" contenteditable="false" data-placeholder="Pts"></span></td><td><span data-key="gr-rp3d" contenteditable="false" data-placeholder="Diff"></span></td></tr>
-      </tbody>
-    </table>
-    <button class="add-row-btn" onclick="addTableRow('tbody-rp',3,'gr-rp-t,gr-rp-p,gr-rp-d',['Task...','Pts','Diff'])">+ Add RP</button>
-    <div style="margin-top:1rem;"><div class="field-label">What does this mean to us?</div><div data-key="gr-rp-takeaway" contenteditable="false" data-placeholder="Enter takeaway..." style="min-height:40px;padding:6px 0;font-size:13px;color:var(--muted);"></div></div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Scoring</div>
-    <table class="data-table">
-      <thead><tr><th>Task</th><th>Points</th><th>Difficulty</th></tr></thead>
-      <tbody id="tbody-scoring">
-        <tr><td><span data-key="gr-sc1t" contenteditable="false" data-placeholder="Task..."></span></td><td><span data-key="gr-sc1p" contenteditable="false" data-placeholder="Pts"></span></td><td><span data-key="gr-sc1d" contenteditable="false" data-placeholder="Diff"></span></td></tr>
-        <tr><td><span data-key="gr-sc2t" contenteditable="false" data-placeholder="Task..."></span></td><td><span data-key="gr-sc2p" contenteditable="false" data-placeholder="Pts"></span></td><td><span data-key="gr-sc2d" contenteditable="false" data-placeholder="Diff"></span></td></tr>
-        <tr><td><span data-key="gr-sc3t" contenteditable="false" data-placeholder="Task..."></span></td><td><span data-key="gr-sc3p" contenteditable="false" data-placeholder="Pts"></span></td><td><span data-key="gr-sc3d" contenteditable="false" data-placeholder="Diff"></span></td></tr>
-      </tbody>
-    </table>
-    <button class="add-row-btn" onclick="addTableRow('tbody-scoring',3,'gr-sc-t,gr-sc-p,gr-sc-d',['Task...','Pts','Diff'])">+ Add scoring task</button>
-    <div style="margin-top:1rem;"><div class="field-label">What does this mean to us?</div><div data-key="gr-scoring-takeaway" contenteditable="false" data-placeholder="Enter takeaway..." style="min-height:40px;padding:6px 0;font-size:13px;color:var(--muted);"></div></div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Points Per Second Analysis</div>
-    <table class="data-table">
-      <thead><tr><th>Task</th><th>Time Per Cycle</th><th>Points Per Second</th></tr></thead>
-      <tbody id="tbody-pps">
-        <tr><td><span data-key="gr-pps1t" contenteditable="false" data-placeholder="Task..."></span></td><td><span data-key="gr-pps1c" contenteditable="false" data-placeholder="sec"></span></td><td><span data-key="gr-pps1s" contenteditable="false" data-placeholder="pts/s"></span></td></tr>
-        <tr><td><span data-key="gr-pps2t" contenteditable="false" data-placeholder="Task..."></span></td><td><span data-key="gr-pps2c" contenteditable="false" data-placeholder="sec"></span></td><td><span data-key="gr-pps2s" contenteditable="false" data-placeholder="pts/s"></span></td></tr>
-      </tbody>
-    </table>
-    <button class="add-row-btn" onclick="addTableRow('tbody-pps',3,'gr-pps-t,gr-pps-c,gr-pps-s',['Task...','Time (sec)','Pts/sec'])">+ Add row</button>
-    <div style="margin-top:1rem;"><div class="field-label">Analysis</div><div data-key="gr-pps-analysis" contenteditable="false" data-placeholder="Enter analysis..." style="min-height:40px;padding:6px 0;font-size:13px;color:var(--muted);"></div></div>
-  </div>
-
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-title">Defense Opportunities</div>
-      <table class="data-table">
-        <thead><tr><th>Task</th><th>Difficulty</th><th>Value</th></tr></thead>
-        <tbody id="tbody-defense">
-          <tr><td><span data-key="gr-def1t" contenteditable="false" data-placeholder="Task..."></span></td><td><span data-key="gr-def1d" contenteditable="false" data-placeholder="Diff"></span></td><td><span data-key="gr-def1v" contenteditable="false" data-placeholder="Value"></span></td></tr>
-          <tr><td><span data-key="gr-def2t" contenteditable="false" data-placeholder="Task..."></span></td><td><span data-key="gr-def2d" contenteditable="false" data-placeholder="Diff"></span></td><td><span data-key="gr-def2v" contenteditable="false" data-placeholder="Value"></span></td></tr>
-        </tbody>
-      </table>
-      <button class="add-row-btn" onclick="addTableRow('tbody-defense',3,'gr-def-t,gr-def-d,gr-def-v',['Task...','Diff','Value'])">+ Add</button>
-    </div>
-    <div class="card">
-      <div class="card-title">Penalties</div>
-      <table class="data-table">
-        <thead><tr><th>Task</th><th>Penalty Pts</th><th>Impact</th></tr></thead>
-        <tbody id="tbody-penalty">
-          <tr><td><span data-key="gr-pen1t" contenteditable="false" data-placeholder="Task..."></span></td><td><span data-key="gr-pen1p" contenteditable="false" data-placeholder="Pts"></span></td><td><span data-key="gr-pen1i" contenteditable="false" data-placeholder="Impact"></span></td></tr>
-          <tr><td><span data-key="gr-pen2t" contenteditable="false" data-placeholder="Task..."></span></td><td><span data-key="gr-pen2p" contenteditable="false" data-placeholder="Pts"></span></td><td><span data-key="gr-pen2i" contenteditable="false" data-placeholder="Impact"></span></td></tr>
-        </tbody>
-      </table>
-      <button class="add-row-btn" onclick="addTableRow('tbody-penalty',3,'gr-pen-t,gr-pen-p,gr-pen-i',['Task...','Pts','Impact'])">+ Add</button>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Robot Design Constraints</div>
-    <table class="data-table">
-      <thead><tr><th>Constraint</th><th>Value</th></tr></thead>
-      <tbody id="tbody-constraints">
-        <tr><td>Max Frame Size</td><td><span data-key="gr-c1v" contenteditable="false">27.5 × 27.5" MAX SQUARE</span></td></tr>
-        <tr><td><span data-key="gr-c2n" contenteditable="false" data-placeholder="Constraint..."></span></td><td><span data-key="gr-c2v" contenteditable="false" data-placeholder="Value..."></span></td></tr>
-        <tr><td><span data-key="gr-c3n" contenteditable="false" data-placeholder="Constraint..."></span></td><td><span data-key="gr-c3v" contenteditable="false" data-placeholder="Value..."></span></td></tr>
-        <tr><td><span data-key="gr-c4n" contenteditable="false" data-placeholder="Constraint..."></span></td><td><span data-key="gr-c4v" contenteditable="false" data-placeholder="Value..."></span></td></tr>
-      </tbody>
-    </table>
-    <button class="add-row-btn" onclick="addTableRow('tbody-constraints',2,'gr-cn,gr-cv',['Constraint...','Value...'])">+ Add constraint</button>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Rules Q&amp;A</div>
-    <table class="data-table">
-      <thead><tr><th>Question</th><th>Answer</th></tr></thead>
-      <tbody id="tbody-qa">
-        <tr><td><span data-key="gr-qa1q" contenteditable="false" data-placeholder="Question..."></span></td><td><span data-key="gr-qa1a" contenteditable="false" data-placeholder="Answer from FIRST Q&A..."></span></td></tr>
-        <tr><td><span data-key="gr-qa2q" contenteditable="false" data-placeholder="Question..."></span></td><td><span data-key="gr-qa2a" contenteditable="false" data-placeholder="Answer from FIRST Q&A..."></span></td></tr>
-      </tbody>
-    </table>
-    <button class="add-row-btn" onclick="addTableRow('tbody-qa',2,'gr-qa-q,gr-qa-a',['Question...','Answer...'])">+ Add Q&amp;A</button>
-  </div>
-</div>
-
-<!-- ============ CPM ANALYSIS ============ -->
-<div id="tab-cpm" class="tab-content">
-  <div class="section-header"><div>
-    <div class="section-tag">CYCLES PER MATCH</div>
-    <div class="section-title">CPM Analysis</div>
-    <div class="section-desc" data-key="cpm-scenario" contenteditable="false">Scenario: Drive to pose Shooter (score from positions 4, 5, 6, 7)</div>
-  </div></div>
-
-  <div class="grid-3" style="margin-bottom:1.5rem;">
-    <div class="cpm-stat"><div class="cpm-stat-val" data-key="cpm-cycles" contenteditable="false">10</div><div class="cpm-stat-label">Total Cycles</div></div>
-    <div class="cpm-stat"><div class="cpm-stat-val" data-key="cpm-points" contenteditable="false">264</div><div class="cpm-stat-label">Total Points</div></div>
-    <div class="cpm-stat"><div class="cpm-stat-val" data-key="cpm-time" contenteditable="false">69.6s</div><div class="cpm-stat-label">Time Used</div></div>
-  </div>
-
-  <div class="card" style="margin-bottom:1rem;">
-    <div class="card-title">Assumptions</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;font-size:13px;">
-      <div><span style="color:var(--muted);">Intake time:</span> <span data-key="cpm-intake" contenteditable="false" style="color:var(--gold);">10 sec</span></div>
-      <div><span style="color:var(--muted);">Recover time:</span> <span data-key="cpm-recover" contenteditable="false" style="color:var(--gold);">0.081 sec</span></div>
-      <div><span style="color:var(--muted);">Spin up time:</span> <span data-key="cpm-spinup" contenteditable="false" style="color:var(--gold);">0.9 sec</span></div>
-      <div><span style="color:var(--muted);">Speed:</span> <span data-key="cpm-speed" contenteditable="false" style="color:var(--gold);">10 fps</span></div>
-      <div><span style="color:var(--muted);">Cycle window:</span> <span data-key="cpm-window" contenteditable="false" style="color:var(--blue);">105 sec (omits 15s auton + 30s endgame)</span></div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Analysis</div>
-    <p style="font-size:14px;line-height:1.7;" data-key="cpm-analysis" contenteditable="false" data-placeholder="Enter CPM analysis notes...">Shooters require time to spin up to speed and recover between shots to maintain accuracy. This accounts for the most lost time. Prototyping will better account for spin up and recovery times as this simulator uses reCalc numbers to simulate.</p>
-  </div>
-</div>
-
-<!-- ============ STRAT ANALYSIS ============ -->
-<div id="tab-strat" class="tab-content">
-  <div class="section-header"><div>
-    <div class="section-tag">STRATEGY</div>
-    <div class="section-title">Strategy Analysis</div>
-    <div class="section-desc">Study how the game may be played to develop possible strategies affecting robot design.</div>
-  </div></div>
-
-  <div class="card" style="border-left:3px solid var(--accent);">
-    <div class="card-title">Strategy Summary</div>
-    <p style="font-size:14px;color:var(--muted);line-height:1.7;" data-key="strat-summary" contenteditable="false" data-placeholder="Enter overall game strategy summary...">Auto: Be able to empty pre-load, take 24 fuel from depot or go under the trench, fill hopper and come back and shoot, end with a climb with room for more cycles if possible. NEEDING to win Auto. Teleop: Bar minimum get 100 fuel (getting the Energized RP) and a max around 250, with optimal ability to shunt balls from any zone to ours (40–50 ball cycles, 3 shunt cycles per inactive period).</p>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Anticipated Robot Archetypes</div>
-    <table class="data-table">
-      <thead><tr><th>Archetype</th><th>Pros/Cons</th><th>CPM</th><th>Score Potential</th></tr></thead>
-      <tbody id="tbody-archetypes">
-        <tr><td><span data-key="sa-a1n" contenteditable="false" data-placeholder="Archetype..."></span></td><td><span data-key="sa-a1c" contenteditable="false" data-placeholder="Pros/Cons..."></span></td><td><span data-key="sa-a1m" contenteditable="false" data-placeholder="CPM"></span></td><td><span data-key="sa-a1s" contenteditable="false" data-placeholder="~50">~50</span></td></tr>
-        <tr><td><span data-key="sa-a2n" contenteditable="false" data-placeholder="Archetype..."></span></td><td><span data-key="sa-a2c" contenteditable="false" data-placeholder="Pros/Cons..."></span></td><td><span data-key="sa-a2m" contenteditable="false" data-placeholder="CPM"></span></td><td><span data-key="sa-a2s" contenteditable="false" data-placeholder="~80">~80</span></td></tr>
-        <tr><td><span data-key="sa-a3n" contenteditable="false" data-placeholder="Archetype..."></span></td><td><span data-key="sa-a3c" contenteditable="false" data-placeholder="Pros/Cons..."></span></td><td><span data-key="sa-a3m" contenteditable="false" data-placeholder="CPM"></span></td><td><span data-key="sa-a3s" contenteditable="false" data-placeholder="~120">~120</span></td></tr>
-        <tr><td><span data-key="sa-a4n" contenteditable="false" data-placeholder="Archetype..."></span></td><td><span data-key="sa-a4c" contenteditable="false" data-placeholder="Pros/Cons..."></span></td><td><span data-key="sa-a4m" contenteditable="false" data-placeholder="CPM"></span></td><td><span data-key="sa-a4s" contenteditable="false" data-placeholder="~200">~200</span></td></tr>
-      </tbody>
-    </table>
-    <button class="add-row-btn" onclick="addTableRow('tbody-archetypes',4,'sa-an,sa-ac,sa-am,sa-as',['Archetype...','Pros/Cons...','CPM','Score Potential'])">+ Add archetype</button>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Game Simulation Takeaways</div>
-    <ul class="readme-list" id="sa-sim">
-      <li><span class="del-row" onclick="delListItem(this)">✕</span><span data-key="sa-sim1" contenteditable="false" data-placeholder="Takeaway from simulation..."></span></li>
-      <li><span class="del-row" onclick="delListItem(this)">✕</span><span data-key="sa-sim2" contenteditable="false" data-placeholder="Takeaway from simulation..."></span></li>
-    </ul>
-    <button class="add-row-btn" onclick="addListItem('sa-sim','sa-sim')">+ Add takeaway</button>
-  </div>
-
-  <div class="card">
-    <div class="card-title">SWOT Analysis</div>
-    <div class="swot-grid">
-      <div class="swot-cell S"><div class="swot-label">Strengths</div><div data-key="swot-s" contenteditable="false" data-placeholder="Identify strengths to exploit..." style="font-size:13px;color:var(--muted);min-height:60px;"></div></div>
-      <div class="swot-cell W"><div class="swot-label">Weaknesses</div><div data-key="swot-w" contenteditable="false" data-placeholder="Identify weaknesses to consider..." style="font-size:13px;color:var(--muted);min-height:60px;"></div></div>
-      <div class="swot-cell O"><div class="swot-label">Opportunities</div><div data-key="swot-o" contenteditable="false" data-placeholder="Unique opportunities to exploit..." style="font-size:13px;color:var(--muted);min-height:60px;"></div></div>
-      <div class="swot-cell T"><div class="swot-label">Threats + Countermeasures</div><div data-key="swot-t" contenteditable="false" data-placeholder="Identify threats and countermeasures..." style="font-size:13px;color:var(--muted);min-height:60px;"></div></div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Engineering Solution Opportunities</div>
-    <table class="data-table">
-      <thead><tr><th>Subsystem</th><th>Capability</th><th>Benefit</th><th>Difficulty</th></tr></thead>
-      <tbody id="tbody-eng">
-        <tr><td><span data-key="sa-e1s" contenteditable="false" data-placeholder="Subsystem..."></span></td><td><span data-key="sa-e1c" contenteditable="false" data-placeholder="Capability..."></span></td><td><span data-key="sa-e1b" contenteditable="false" data-placeholder="Benefit..."></span></td><td><span data-key="sa-e1d" contenteditable="false" data-placeholder="Difficulty"></span></td></tr>
-        <tr><td><span data-key="sa-e2s" contenteditable="false" data-placeholder="Subsystem..."></span></td><td><span data-key="sa-e2c" contenteditable="false" data-placeholder="Capability..."></span></td><td><span data-key="sa-e2b" contenteditable="false" data-placeholder="Benefit..."></span></td><td><span data-key="sa-e2d" contenteditable="false" data-placeholder="Difficulty"></span></td></tr>
-      </tbody>
-    </table>
-    <button class="add-row-btn" onclick="addTableRow('tbody-eng',4,'sa-es,sa-ec,sa-eb,sa-ed',['Subsystem...','Capability...','Benefit...','Difficulty'])">+ Add solution</button>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Programming Solution Opportunities (6369)</div>
-    <table class="data-table">
-      <thead><tr><th>Capability</th><th>Benefit</th><th>Difficulty</th><th>Value</th></tr></thead>
-      <tbody id="tbody-prog">
-        <tr><td><span data-key="sa-pr1c" contenteditable="false" data-placeholder="Capability..."></span></td><td><span data-key="sa-pr1b" contenteditable="false" data-placeholder="Benefit..."></span></td><td><span data-key="sa-pr1d" contenteditable="false" data-placeholder="Difficulty"></span></td><td><span data-key="sa-pr1v" contenteditable="false" data-placeholder="Value"></span></td></tr>
-        <tr><td><span data-key="sa-pr2c" contenteditable="false" data-placeholder="Capability..."></span></td><td><span data-key="sa-pr2b" contenteditable="false" data-placeholder="Benefit..."></span></td><td><span data-key="sa-pr2d" contenteditable="false" data-placeholder="Difficulty"></span></td><td><span data-key="sa-pr2v" contenteditable="false" data-placeholder="Value"></span></td></tr>
-      </tbody>
-    </table>
-    <button class="add-row-btn" onclick="addTableRow('tbody-prog',4,'sa-prc,sa-prb,sa-prd,sa-prv',['Capability...','Benefit...','Difficulty','Value'])">+ Add solution</button>
-  </div>
-</div>
-
-<!-- ============ ROBOT SPECS ============ -->
-<div id="tab-specs" class="tab-content">
-  <div class="section-header"><div>
-    <div class="section-tag">SPECIFICATIONS</div>
-    <div class="section-title">Robot Specifications</div>
-    <div class="section-desc">List robot capabilities and qualities. Prioritize critical path tasks first.</div>
-  </div></div>
-
-  <div class="card">
-    <div class="card-title">Robot Capabilities</div>
-    <table class="data-table">
-      <thead><tr><th>Capability</th><th>Description</th><th>By When</th></tr></thead>
-      <tbody id="tbody-caps">
-        <tr><td><span data-key="rs-c1n" contenteditable="false">&lt;1 second intake time</span></td><td><span data-key="rs-c1d" contenteditable="false" data-placeholder="Description..."></span></td><td><span data-key="rs-c1w" contenteditable="false">Bravo</span></td></tr>
-        <tr><td><span data-key="rs-c2n" contenteditable="false">Minimum 24 ball storage</span></td><td><span data-key="rs-c2d" contenteditable="false" data-placeholder="Description..."></span></td><td><span data-key="rs-c2w" contenteditable="false">Bravo</span></td></tr>
-        <tr><td><span data-key="rs-c3n" contenteditable="false">Under 22"</span></td><td><span data-key="rs-c3d" contenteditable="false" data-placeholder="Description..."></span></td><td><span data-key="rs-c3w" contenteditable="false">Bravo</span></td></tr>
-        <tr><td><span data-key="rs-c4n" contenteditable="false">Level 1</span></td><td><span data-key="rs-c4d" contenteditable="false" data-placeholder="Description..."></span></td><td><span data-key="rs-c4w" contenteditable="false">Bravo</span></td></tr>
-        <tr><td><span data-key="rs-c5n" contenteditable="false">Level 3</span></td><td><span data-key="rs-c5d" contenteditable="false" data-placeholder="Description..."></span></td><td><span data-key="rs-c5w" contenteditable="false">Charlie</span></td></tr>
-        <tr><td><span data-key="rs-c6n" contenteditable="false">Hooded Shooter</span></td><td><span data-key="rs-c6d" contenteditable="false" data-placeholder="Description..."></span></td><td><span data-key="rs-c6w" contenteditable="false">Bravo</span></td></tr>
-        <tr><td><span data-key="rs-c7n" contenteditable="false">Turreted Shooter</span></td><td><span data-key="rs-c7d" contenteditable="false" data-placeholder="Description..."></span></td><td><span data-key="rs-c7w" contenteditable="false">Bravo</span></td></tr>
-        <tr><td><span data-key="rs-c8n" contenteditable="false">Shooter range 2–20'</span></td><td><span data-key="rs-c8d" contenteditable="false" data-placeholder="Description..."></span></td><td><span data-key="rs-c8w" contenteditable="false">Bravo</span></td></tr>
-      </tbody>
-    </table>
-    <button class="add-row-btn" onclick="addTableRow('tbody-caps',3,'rs-cn,rs-cd,rs-cw',['Capability...','Description...','By When...'])">+ Add capability</button>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Robot Qualities</div>
-    <table class="data-table">
-      <thead><tr><th>Quality</th><th>Target</th><th>Notes</th></tr></thead>
-      <tbody id="tbody-quals">
-        <tr><td>Weight</td><td><span data-key="rs-q1t" contenteditable="false" data-placeholder="Target...">Weight target</span></td><td><span data-key="rs-q1n" contenteditable="false" data-placeholder="Notes..."></span></td></tr>
-        <tr><td>CG</td><td><span data-key="rs-q2t" contenteditable="false" data-placeholder="Target...">Low or high</span></td><td><span data-key="rs-q2n" contenteditable="false" data-placeholder="Notes..."></span></td></tr>
-        <tr><td>Drivebase dimensions</td><td><span data-key="rs-q3t" contenteditable="false" data-placeholder="Target...">27×27"</span></td><td><span data-key="rs-q3n" contenteditable="false" data-placeholder="Notes..."></span></td></tr>
-        <tr><td>Drive gear ratio</td><td><span data-key="rs-q4t" contenteditable="false" data-placeholder="Target...">Hi speed or hi accel</span></td><td><span data-key="rs-q4n" contenteditable="false" data-placeholder="Notes..."></span></td></tr>
-        <tr><td>Drivebase type</td><td><span data-key="rs-q5t" contenteditable="false" data-placeholder="Target...">Swerve or tank</span></td><td><span data-key="rs-q5n" contenteditable="false" data-placeholder="Notes..."></span></td></tr>
-        <tr><td>Reliability</td><td><span data-key="rs-q6t" contenteditable="false" data-placeholder="Target..."></span></td><td><span data-key="rs-q6n" contenteditable="false" data-placeholder="Notes..."></span></td></tr>
-      </tbody>
-    </table>
-    <button class="add-row-btn" onclick="addTableRow('tbody-quals',3,'rs-qname,rs-qt,rs-qn',['Quality...','Target...','Notes...'])">+ Add quality</button>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Programming Priorities</div>
-    <table class="data-table">
-      <thead><tr><th>#</th><th>Task</th><th>By When</th><th>Notes</th></tr></thead>
-      <tbody id="tbody-prog2">
-        <tr><td>1</td><td><span data-key="rs-pr1t" contenteditable="false">Turret coded and tested with close and long range tracking</span></td><td><span data-key="rs-pr1w" contenteditable="false">Bravo</span></td><td><span data-key="rs-pr1n" contenteditable="false" style="color:var(--green);">Critical path: 100% Mobility</span></td></tr>
-        <tr><td>2</td><td><span data-key="rs-pr2t" contenteditable="false">Hood with distance tracking and variation</span></td><td><span data-key="rs-pr2w" contenteditable="false">Bravo</span></td><td><span data-key="rs-pr2n" contenteditable="false" style="color:var(--green);">Critical path: Touch it Own</span></td></tr>
-        <tr><td>3</td><td><span data-key="rs-pr3t" contenteditable="false">Flywheels tuned with exact velocity</span></td><td><span data-key="rs-pr3w" contenteditable="false">Bravo</span></td><td><span data-key="rs-pr3n" contenteditable="false" style="color:var(--green);">Critical path: 100 in 1 Scoring</span></td></tr>
-        <tr><td>4</td><td><span data-key="rs-pr4t" contenteditable="false">"Do we have a ball" reflective sensors</span></td><td><span data-key="rs-pr4w" contenteditable="false">Bravo</span></td><td><span data-key="rs-pr4n" contenteditable="false" data-placeholder="Notes..."></span></td></tr>
-        <tr><td>5</td><td><span data-key="rs-pr5t" contenteditable="false">Full field localization</span></td><td><span data-key="rs-pr5w" contenteditable="false">Bravo</span></td><td><span data-key="rs-pr5n" contenteditable="false" data-placeholder="Notes..."></span></td></tr>
-        <tr><td>6</td><td><span data-key="rs-pr6t" contenteditable="false">Mechanisms other than mentioned programmed</span></td><td><span data-key="rs-pr6w" contenteditable="false">Bravo</span></td><td><span data-key="rs-pr6n" contenteditable="false" data-placeholder="Notes..."></span></td></tr>
-      </tbody>
-    </table>
-    <button class="add-row-btn" onclick="addTableRow('tbody-prog2',4,'rs-prt,rs-prw,rs-prn',['Task...','By When...','Notes...'])">+ Add priority</button>
-  </div>
-</div>
-
-<!-- ============ PROTOTYPE TASKS ============ -->
-<div id="tab-proto" class="tab-content">
-  <div class="section-header"><div>
-    <div class="section-tag">PROTOTYPING</div>
-    <div class="section-title">Prototype Tasks</div>
-    <div class="section-desc">Specific prototype tasks needed to answer key design questions.</div>
-  </div></div>
-
-  <div class="info-box">Be specific and detailed. State if CAD is required. Avoid multitasking leads or set a priority order. Each task must be replicated in the EN along with the end result.</div>
-
-  <div class="card">
-    <div class="card-title">Tasks</div>
-    <table class="data-table">
-      <thead><tr><th>Task</th><th>Lead</th><th>Group Members</th><th style="width:30px;"></th></tr></thead>
-      <tbody id="tbody-proto">
-        <tr><td><span data-key="pt-t1" contenteditable="false">Shooter compression, wheel compression, speed</span></td><td><span data-key="pt-l1" contenteditable="false">Grayson</span></td><td><span data-key="pt-m1" contenteditable="false" data-placeholder="Members..."></span></td><td><span class="del-row" onclick="this.closest('tr').remove();saveAll()" style="display:none;">✕</span></td></tr>
-        <tr><td><span data-key="pt-t2" contenteditable="false">Intake wheel type, compression. Test star wheels and geko wheels. Can balls push other balls up and out of the way when intaked up?</span></td><td><span data-key="pt-l2" contenteditable="false">Nick</span></td><td><span data-key="pt-m2" contenteditable="false" data-placeholder="Members..."></span></td><td><span class="del-row" onclick="this.closest('tr').remove();saveAll()" style="display:none;">✕</span></td></tr>
-        <tr><td><span data-key="pt-t3" contenteditable="false">Testing rubber coated belts for the transfer</span></td><td><span data-key="pt-l3" contenteditable="false">Nisith</span></td><td><span data-key="pt-m3" contenteditable="false" data-placeholder="Members..."></span></td><td><span class="del-row" onclick="this.closest('tr').remove();saveAll()" style="display:none;">✕</span></td></tr>
-      </tbody>
-    </table>
-    <button class="add-row-btn" onclick="addProtoRow()">+ Add task</button>
-  </div>
-</div>
-
-<!-- ============ EVALUATE CONCEPTS ============ -->
-<div id="tab-eval" class="tab-content">
-  <div class="section-header"><div>
-    <div class="section-tag">CONCEPT SELECTION</div>
-    <div class="section-title">Evaluate Concepts</div>
-    <div class="section-desc">Evaluate concepts to choose one. Design Team only.</div>
-  </div></div>
-
-  <div class="card">
-    <div class="card-title">Concept Overview</div>
-    <div style="overflow-x:auto;">
-    <table class="data-table">
-      <thead><tr><th>Criteria</th><th>Past Robot (Baseline)</th><th>Concept 1</th><th>Concept 2</th><th>Concept 3</th></tr></thead>
-      <tbody>
-        <tr><td style="color:var(--muted);">Archetype</td><td><span data-key="ev-base-arch" contenteditable="false" data-placeholder="—"></span></td><td><span data-key="ev-c1-arch" contenteditable="false" data-placeholder="—"></span></td><td><span data-key="ev-c2-arch" contenteditable="false" data-placeholder="—"></span></td><td><span data-key="ev-c3-arch" contenteditable="false" data-placeholder="—"></span></td></tr>
-        <tr><td style="color:var(--muted);">Anticipated CPM</td><td><span data-key="ev-base-cpm" contenteditable="false" data-placeholder="—"></span></td><td><span data-key="ev-c1-cpm" contenteditable="false" data-placeholder="—"></span></td><td><span data-key="ev-c2-cpm" contenteditable="false" data-placeholder="—"></span></td><td><span data-key="ev-c3-cpm" contenteditable="false" data-placeholder="—"></span></td></tr>
-        <tr><td style="color:var(--muted);">Proven CAD Geometry?</td><td><span data-key="ev-base-cad" contenteditable="false" data-placeholder="Y/N"></span></td><td><span data-key="ev-c1-cad" contenteditable="false" data-placeholder="Y/N"></span></td><td><span data-key="ev-c2-cad" contenteditable="false" data-placeholder="Y/N"></span></td><td><span data-key="ev-c3-cad" contenteditable="false" data-placeholder="Y/N"></span></td></tr>
-      </tbody>
-    </table>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Simplicity Level</div>
-    <div style="overflow-x:auto;">
-    <table class="data-table">
-      <thead><tr><th>Metric</th><th>Baseline</th><th>C1</th><th>C2</th><th>C3</th></tr></thead>
-      <tbody>
-        <tr><td>Number of Subsystems</td><td><span data-key="ev-sim1-base" contenteditable="false" data-placeholder="—"></span></td><td><span data-key="ev-sim1-c1" contenteditable="false" data-placeholder="—"></span></td><td><span data-key="ev-sim1-c2" contenteditable="false" data-placeholder="—"></span></td><td><span data-key="ev-sim1-c3" contenteditable="false" data-placeholder="—"></span></td></tr>
-        <tr><td>Scoring DOFs</td><td><span data-key="ev-sim2-base" contenteditable="false" data-placeholder="—"></span></td><td><span data-key="ev-sim2-c1" contenteditable="false" data-placeholder="—"></span></td><td><span data-key="ev-sim2-c2" contenteditable="false" data-placeholder="—"></span></td><td><span data-key="ev-sim2-c3" contenteditable="false" data-placeholder="—"></span></td></tr>
-        <tr><td>Number of Handoffs</td><td><span data-key="ev-sim3-base" contenteditable="false" data-placeholder="—"></span></td><td><span data-key="ev-sim3-c1" contenteditable="false" data-placeholder="—"></span></td><td><span data-key="ev-sim3-c2" contenteditable="false" data-placeholder="—"></span></td><td><span data-key="ev-sim3-c3" contenteditable="false" data-placeholder="—"></span></td></tr>
-        <tr><td>Custom Concepts</td><td><span data-key="ev-sim4-base" contenteditable="false" data-placeholder="—"></span></td><td><span data-key="ev-sim4-c1" contenteditable="false" data-placeholder="—"></span></td><td><span data-key="ev-sim4-c2" contenteditable="false" data-placeholder="—"></span></td><td><span data-key="ev-sim4-c3" contenteditable="false" data-placeholder="—"></span></td></tr>
-      </tbody>
-    </table>
-    </div>
-  </div>
-
-  <div class="card" style="border-color:rgba(245,166,35,0.3);background:rgba(245,166,35,0.04);">
-    <div class="card-title">Weighted Matrix</div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:1rem;">Assign value 1–5 for each concept. Higher is better.</div>
-    <div class="matrix-row">
-      <div class="matrix-label" data-key="mx-1-label" contenteditable="false">Design Difficulty (×1)</div>
-      <div class="matrix-score" data-key="mx-1-base" contenteditable="false" data-placeholder="0">3</div>
-      <div class="matrix-score" data-key="mx-1-c1" contenteditable="false" data-placeholder="0" style="border-color:rgba(58,142,245,0.3);color:var(--blue);background:rgba(58,142,245,0.1);"></div>
-      <div class="matrix-score" data-key="mx-1-c2" contenteditable="false" data-placeholder="0" style="border-color:rgba(58,142,245,0.3);color:var(--blue);background:rgba(58,142,245,0.1);"></div>
-      <div class="matrix-score" data-key="mx-1-c3" contenteditable="false" data-placeholder="0" style="border-color:rgba(58,142,245,0.3);color:var(--blue);background:rgba(58,142,245,0.1);"></div>
-      <div class="matrix-desc" data-key="mx-1-desc" contenteditable="false">Custom designs, tight fits, many subsystems, and handoffs add difficulty</div>
-    </div>
-    <div class="matrix-row">
-      <div class="matrix-label" data-key="mx-2-label" contenteditable="false">Build Difficulty (×1)</div>
-      <div class="matrix-score" data-key="mx-2-base" contenteditable="false" data-placeholder="0">3</div>
-      <div class="matrix-score" data-key="mx-2-c1" contenteditable="false" data-placeholder="0" style="border-color:rgba(58,142,245,0.3);color:var(--blue);background:rgba(58,142,245,0.1);"></div>
-      <div class="matrix-score" data-key="mx-2-c2" contenteditable="false" data-placeholder="0" style="border-color:rgba(58,142,245,0.3);color:var(--blue);background:rgba(58,142,245,0.1);"></div>
-      <div class="matrix-score" data-key="mx-2-c3" contenteditable="false" data-placeholder="0" style="border-color:rgba(58,142,245,0.3);color:var(--blue);background:rgba(58,142,245,0.1);"></div>
-      <div class="matrix-desc" data-key="mx-2-desc" contenteditable="false">Look at old robots — if we haven't done it before or many subsystems</div>
-    </div>
-    <div class="matrix-row">
-      <div class="matrix-label" data-key="mx-3-label" contenteditable="false">Programming Difficulty (×1)</div>
-      <div class="matrix-score" data-key="mx-3-base" contenteditable="false" data-placeholder="0">2</div>
-      <div class="matrix-score" data-key="mx-3-c1" contenteditable="false" data-placeholder="0" style="border-color:rgba(58,142,245,0.3);color:var(--blue);background:rgba(58,142,245,0.1);"></div>
-      <div class="matrix-score" data-key="mx-3-c2" contenteditable="false" data-placeholder="0" style="border-color:rgba(58,142,245,0.3);color:var(--blue);background:rgba(58,142,245,0.1);"></div>
-      <div class="matrix-score" data-key="mx-3-c3" contenteditable="false" data-placeholder="0" style="border-color:rgba(58,142,245,0.3);color:var(--blue);background:rgba(58,142,245,0.1);"></div>
-      <div class="matrix-desc" data-key="mx-3-desc" contenteditable="false">Many DOFs and subsystems add difficulty</div>
-    </div>
-    <div class="matrix-row">
-      <div class="matrix-label" data-key="mx-4-label" contenteditable="false">Risk Level (×1)</div>
-      <div class="matrix-score" data-key="mx-4-base" contenteditable="false" data-placeholder="0">3</div>
-      <div class="matrix-score" data-key="mx-4-c1" contenteditable="false" data-placeholder="0" style="border-color:rgba(58,142,245,0.3);color:var(--blue);background:rgba(58,142,245,0.1);"></div>
-      <div class="matrix-score" data-key="mx-4-c2" contenteditable="false" data-placeholder="0" style="border-color:rgba(58,142,245,0.3);color:var(--blue);background:rgba(58,142,245,0.1);"></div>
-      <div class="matrix-score" data-key="mx-4-c3" contenteditable="false" data-placeholder="0" style="border-color:rgba(58,142,245,0.3);color:var(--blue);background:rgba(58,142,245,0.1);"></div>
-      <div class="matrix-desc" data-key="mx-4-desc" contenteditable="false">How far within or outside of the team's capabilities</div>
-    </div>
-    <div class="matrix-row">
-      <div class="matrix-label" data-key="mx-5-label" contenteditable="false">Robot Capability (×1)</div>
-      <div class="matrix-score" data-key="mx-5-base" contenteditable="false" data-placeholder="0">3</div>
-      <div class="matrix-score" data-key="mx-5-c1" contenteditable="false" data-placeholder="0" style="border-color:rgba(58,142,245,0.3);color:var(--blue);background:rgba(58,142,245,0.1);"></div>
-      <div class="matrix-score" data-key="mx-5-c2" contenteditable="false" data-placeholder="0" style="border-color:rgba(58,142,245,0.3);color:var(--blue);background:rgba(58,142,245,0.1);"></div>
-      <div class="matrix-score" data-key="mx-5-c3" contenteditable="false" data-placeholder="0" style="border-color:rgba(58,142,245,0.3);color:var(--blue);background:rgba(58,142,245,0.1);"></div>
-      <div class="matrix-desc" data-key="mx-5-desc" contenteditable="false">CPM Performance</div>
-    </div>
-    <div style="display:flex;justify-content:flex-end;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);gap:2rem;">
-      <div style="text-align:center;"><div style="font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace;">BASELINE</div><div style="font-size:24px;font-weight:700;color:var(--gold);" id="total-base">14</div></div>
-      <div style="text-align:center;"><div style="font-size:11px;color:var(--blue);font-family:'IBM Plex Mono',monospace;">CONCEPT 1</div><div style="font-size:24px;font-weight:700;color:var(--blue);" id="total-c1">—</div></div>
-      <div style="text-align:center;"><div style="font-size:11px;color:var(--blue);font-family:'IBM Plex Mono',monospace;">CONCEPT 2</div><div style="font-size:24px;font-weight:700;color:var(--blue);" id="total-c2">—</div></div>
-      <div style="text-align:center;"><div style="font-size:11px;color:var(--blue);font-family:'IBM Plex Mono',monospace;">CONCEPT 3</div><div style="font-size:24px;font-weight:700;color:var(--blue);" id="total-c3">—</div></div>
-    </div>
-  </div>
-</div>
-
-<!-- WORK GROUPS tab (simplified for space) -->
-<div id="tab-workgroups" class="tab-content">
-  <div class="section-header"><div>
-    <div class="section-tag">TEAM STRUCTURE</div>
-    <div class="section-title">Work Groups</div>
-    <div class="section-desc">Design roles, kickoff groups, CAD and programming assignments for both 6369 and 6773.</div>
-  </div></div>
-
-  <div class="phase-label">Design Team 6369 (Lead: <span data-key="wg-lead-6369" contenteditable="false">Brady</span>)</div>
-  <div class="card">
-    <table class="data-table">
-      <thead><tr><th>Subteam</th><th>Lead</th><th>CAD Lead</th></tr></thead>
-      <tbody id="tbody-dt6369">
-        <tr><td><span data-key="wg-6369-s1" contenteditable="false">Drive Base</span></td><td><span data-key="wg-6369-l1" contenteditable="false">Madison &amp; Garrett</span></td><td><span data-key="wg-6369-c1" contenteditable="false">Kevin</span></td></tr>
-        <tr><td><span data-key="wg-6369-s2" contenteditable="false">Intake</span></td><td><span data-key="wg-6369-l2" contenteditable="false">Drew</span></td><td><span data-key="wg-6369-c2" contenteditable="false">Abbey</span></td></tr>
-        <tr><td><span data-key="wg-6369-s3" contenteditable="false">Scoring</span></td><td><span data-key="wg-6369-l3" contenteditable="false">Nisith</span></td><td><span data-key="wg-6369-c3" contenteditable="false">Grayson</span></td></tr>
-        <tr><td><span data-key="wg-6369-s4" contenteditable="false">Climb</span></td><td><span data-key="wg-6369-l4" contenteditable="false">James</span></td><td><span data-key="wg-6369-c4" contenteditable="false">Amy</span></td></tr>
-        <tr><td><span data-key="wg-6369-s5" contenteditable="false">Index</span></td><td><span data-key="wg-6369-l5" contenteditable="false">Saina</span></td><td><span data-key="wg-6369-c5" contenteditable="false">Malak</span></td></tr>
-      </tbody>
-    </table>
-    <button class="add-row-btn" onclick="addTableRow('tbody-dt6369',3,'wg-6369-s,wg-6369-l,wg-6369-c',['Subteam...','Lead...','CAD Lead...'])">+ Add subteam</button>
-  </div>
-
-  <div class="phase-label">Design Team 6773 (Lead: <span data-key="wg-lead-6773" contenteditable="false">Nitin</span>)</div>
-  <div class="card">
-    <table class="data-table">
-      <thead><tr><th>Subteam</th><th>Lead</th><th>CAD Lead</th><th>Members</th></tr></thead>
-      <tbody id="tbody-dt6773">
-        <tr><td><span data-key="wg-6773-s1" contenteditable="false">Design Strategy + Master Sketch</span></td><td><span data-key="wg-6773-l1" contenteditable="false">Krish</span></td><td><span data-key="wg-6773-c1" contenteditable="false">Krish</span></td><td><span data-key="wg-6773-m1" contenteditable="false" data-placeholder="Members..."></span></td></tr>
-        <tr><td><span data-key="wg-6773-s2" contenteditable="false">Intake</span></td><td><span data-key="wg-6773-l2" contenteditable="false">Abhi</span></td><td><span data-key="wg-6773-c2" contenteditable="false">Amelia</span></td><td><span data-key="wg-6773-m2" contenteditable="false">Sid</span></td></tr>
-        <tr><td><span data-key="wg-6773-s3" contenteditable="false">Outtake/Scoring</span></td><td><span data-key="wg-6773-l3" contenteditable="false">Dharun</span></td><td><span data-key="wg-6773-c3" contenteditable="false">Krish</span></td><td><span data-key="wg-6773-m3" contenteditable="false">Pradyun, Aayush</span></td></tr>
-        <tr><td><span data-key="wg-6773-s4" contenteditable="false">Climb/Endgame</span></td><td><span data-key="wg-6773-l4" contenteditable="false">Luke</span></td><td><span data-key="wg-6773-c4" contenteditable="false">Aditya</span></td><td><span data-key="wg-6773-m4" contenteditable="false">Rishaan</span></td></tr>
-        <tr><td><span data-key="wg-6773-s5" contenteditable="false">Drivebase/Wiring</span></td><td><span data-key="wg-6773-l5" contenteditable="false">Spoorthi</span></td><td><span data-key="wg-6773-c5" contenteditable="false">Hannah</span></td><td><span data-key="wg-6773-m5" contenteditable="false">Emmett</span></td></tr>
-      </tbody>
-    </table>
-    <button class="add-row-btn" onclick="addTableRow('tbody-dt6773',4,'wg-6773-s,wg-6773-l,wg-6773-c,wg-6773-m',['Subteam...','Lead...','CAD Lead...','Members...'])">+ Add subteam</button>
-  </div>
-</div>
+<div class="save-toast" id="toast">Saved ✓</div>
 
 <script>
-// ── ADMIN CONFIG ──────────────────────────────────────────────
-const ADMIN_PASSWORD = 'mercenary2026'; // ← Change this to your password
-const STORAGE_KEY = 'mrc_strategy_data';
-let isAdmin = false;
+const SB_URL='https://qsiozultzyirdvnqazcc.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFzaW96dWx0enlpcmR2bnFhemNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MDU4NDQsImV4cCI6MjA5MzQ4MTg0NH0.dsFX8pdYnEpNnxEHScU6SJREgS2QyCOhb3PRFGwK-Ao';
+const ADMIN_EMAIL='Ultima610@gmail.com';
+const sb=supabase.createClient(SB_URL,SB_KEY);
+let user=null,isAdmin=false,viewUid=null,D={},allWS=[],saveT=null;
+const DIFF=['','Low','Med','High'],VAL=['','Low','Med','High'],PRI=['','Must Do','Consider','Skip'],MS=['','Alpha','Bravo','Charlie','Delta'];
 
-// ── AUTH ─────────────────────────────────────────────────────
-function handleAdminBtn() {
-  if (isAdmin) { doLogout(); return; }
-  document.getElementById('loginModal').classList.add('show');
-  setTimeout(() => document.getElementById('adminPw').focus(), 100);
-}
-function doLogin() {
-  const pw = document.getElementById('adminPw').value;
-  if (pw === ADMIN_PASSWORD) {
-    isAdmin = true;
-    document.getElementById('loginModal').classList.remove('show');
-    document.getElementById('adminPw').value = '';
-    document.getElementById('loginErr').classList.remove('show');
-    enableAdminMode();
-  } else {
-    document.getElementById('loginErr').classList.add('show');
-    document.getElementById('adminPw').value = '';
-  }
-}
-function doLogout() {
-  isAdmin = false;
-  disableAdminMode();
-}
-function closeLogin() {
-  document.getElementById('loginModal').classList.remove('show');
-  document.getElementById('adminPw').value = '';
-  document.getElementById('loginErr').classList.remove('show');
-}
+// ── HELPERS ──
+function sel(opts,cur,cb){const s=document.createElement('select');s.className='fsel';opts.forEach(o=>{const op=document.createElement('option');op.value=o;op.textContent=o||'— select —';if(o===cur)op.selected=true;s.appendChild(op);});s.onchange=()=>{cb(s.value);as();};return s;}
+function inp(v,ph,cb){const i=document.createElement('input');i.className='finp';i.value=v||'';i.placeholder=ph||'';i.oninput=()=>{cb(i.value);as();};return i;}
+function txt(v,ph,cb){const t=document.createElement('textarea');t.className='ftxt';t.value=v||'';t.placeholder=ph||'';t.oninput=()=>{cb(t.value);as();};return t;}
+function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;if(html)e.innerHTML=html;return e;}
 
-// ── ADMIN MODE ────────────────────────────────────────────────
-function enableAdminMode() {
-  document.body.classList.add('admin-mode');
-  document.getElementById('adminBar').classList.add('show');
-  document.getElementById('adminBadge').classList.add('show');
-  document.getElementById('adminToggleBtn').textContent = 'Log Out';
-  document.getElementById('adminToggleBtn').classList.add('active');
-  // make all data-key elements editable
-  document.querySelectorAll('[data-key]').forEach(el => {
-    el.contentEditable = 'true';
-    el.addEventListener('blur', onFieldBlur);
-  });
-}
-function disableAdminMode() {
-  document.body.classList.remove('admin-mode');
-  document.getElementById('adminBar').classList.remove('show');
-  document.getElementById('adminBadge').classList.remove('show');
-  document.getElementById('adminToggleBtn').textContent = 'Admin';
-  document.getElementById('adminToggleBtn').classList.remove('active');
-  document.querySelectorAll('[data-key]').forEach(el => {
-    el.contentEditable = 'false';
-    el.removeEventListener('blur', onFieldBlur);
-  });
+// ── AUTH ──
+async function signInGoogle(){await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin}});}
+async function signOut(){await sb.auth.signOut();location.reload();}
+
+sb.auth.onAuthStateChange(async(ev,sess)=>{
+  if(sess?.user){
+    user=sess.user;isAdmin=user.email.toLowerCase()===ADMIN_EMAIL.toLowerCase();
+    viewUid=user.id;
+    document.getElementById('auth-screen').style.display='none';
+    document.getElementById('app').style.display='block';
+    document.getElementById('hdr-email').textContent=user.email;
+    if(isAdmin){document.getElementById('admin-badge').classList.add('show');document.getElementById('admin-bar').classList.add('show');await loadAllUsers();}
+    await loadWS();renderAll();
+  }else{document.getElementById('auth-screen').style.display='flex';document.getElementById('app').style.display='none';}
+});
+
+async function loadAllUsers(){
+  const{data}=await sb.from('worksheets').select('user_id,data');
+  allWS=data||[];
+  const s=document.getElementById('user-sel');
+  s.innerHTML=`<option value="${user.id}">My View (Admin)</option>`;
+  allWS.forEach(w=>{if(w.user_id===user.id)return;const e=w.data?.email||w.user_id.substring(0,8);const o=document.createElement('option');o.value=w.user_id;o.textContent=e;s.appendChild(o);});
 }
 
-// ── SAVE / LOAD ───────────────────────────────────────────────
-function onFieldBlur(e) {
-  const key = e.target.dataset.key;
-  if (!key) return;
-  const data = loadData();
-  data[key] = e.target.innerHTML;
-  saveData(data);
+async function switchUser(uid){
+  if(!uid)return;viewUid=uid;
+  const w=allWS.find(x=>x.user_id===uid);
+  document.getElementById('admin-viewing').textContent='→ '+(w?.data?.email||uid);
+  await loadWS();renderAll();
+}
+
+// ── DATA ──
+function defaultData(){return{
+  email:user?.email||'',
+  notes:{plan:'',gr:'',cpm:'',strat:'',specs:'',proto:'',eval:'',wg:''},
+  plan:[
+    {phase:'Kickoff Prep',section:'Assign Work Groups',tasks:[{t:'6369/6773 will split and work separately but share results',d:false},{t:'Update work groups tab',d:false},{t:'Assign table seating',d:false}]},
+    {phase:'Kickoff Prep',section:'Admin Prep',tasks:[{t:'Setup and test connection to Live Stream',d:false},{t:'Test mic',d:false},{t:'Setup group work tables',d:false},{t:'Build Google Form rules review worksheet',d:false},{t:'Make prototyping shopping list',d:false},{t:'Setup Advantage Scope Field Simulator',d:false}]},
+    {phase:'Kickoff Prep',section:'Watch Kickoff Stream',tasks:[{t:'Watch x2 more times',d:false},{t:'Download game manual',d:false},{t:'Download and print field diagram',d:false}]},
+    {phase:'Define the Problem',section:'Analyze Game Rules',tasks:[{t:'Individually read manual in entirety',d:false},{t:'Focus on requirements/constraints that affect robot design',d:false},{t:'Review Pre-BOM needs',d:false}]},
+    {phase:'Research',section:'Analyze Strategies',tasks:[{t:"Examine potential robot archetypes",d:false},{t:"Evaluate Karthik's CPM model",d:false},{t:'Simulate gameplay and evaluate CPM and SWOT',d:false},{t:'Brainstorm programming solutions',d:false},{t:'Watch field tour video and review strategies',d:false}]},
+    {phase:'Generate Specs',section:'Identify Robot Specifications',tasks:[{t:'Review rules and analysis, consolidate into desired specs',d:false},{t:'Document only must-do items',d:false},{t:'Identify prototyping and proof of concept needs',d:false}]},
+    {phase:'Develop Concepts',section:'Brainstorm & Prototype',tasks:[{t:'Sketch/KCAD in relation to field/game elements',d:false},{t:'Show geometrical proof against field/game elements',d:false},{t:'Develop & assign prototype/proof of concept tasks',d:false},{t:'Review Ri3D designs',d:false},{t:'Assess Everybot / REVbot / WCPbot',d:false}]},
+    {phase:'Choose Concept',section:'Final Selection',tasks:[{t:'Choose concept, kitbot, or hybrid',d:false},{t:'Update EN with Robot Concept and requirements/constraints',d:false}]},
+  ],
+  wg:{
+    students:['Nisith','Grayson','Brady','Nick','Malak','James','Amy','Drew','Abbey','Saina','Madison','Garrett','Kevin'],
+    groups:[{name:'Drive Base',lead:'',cad:'',members:[]},{name:'Intake',lead:'',cad:'',members:[]},{name:'Scoring',lead:'',cad:'',members:[]},{name:'Climb',lead:'',cad:'',members:[]},{name:'Index',lead:'',cad:'',members:[]}]
+  },
+  gr:{
+    intake:[{loc:'',diff:'',val:''}],
+    rp:[{task:'',pts:'',diff:''}],
+    scoring:[{task:'',pts:'',diff:''}],
+    pps:[{task:'',time:'',pps:''}],
+    defense:[{task:'',diff:'',val:''}],
+    penalty:[{task:'',pts:'',impact:''}],
+    constraints:[{name:'Max Frame Size',val:'27.5 × 27.5" MAX'}],
+    qa:[{q:'',a:''}],
+  },
+  cpm:{scenario:'Drive to pose Shooter (score from positions 4,5,6,7)',cycles:'10',points:'264',time:'69.6s',intake:'10 sec',recover:'0.081 sec',spinup:'0.9 sec',speed:'10 fps',window:'105 sec (omits 15s auton + 30s endgame)',analysis:'Shooters require time to spin up to speed and recover between shots to maintain accuracy.'},
+  strat:{summary:'',archetypes:[{name:'',pros:'',cpm:'',score:'~50'},{name:'',pros:'',cpm:'',score:'~80'},{name:'',pros:'',cpm:'',score:'~120'},{name:'',pros:'',cpm:'',score:'~200'}],swot:{s:'',w:'',o:'',t:''},eng:[{sub:'',cap:'',ben:'',diff:''}],prog:[{cap:'',ben:'',diff:'',val:''}]},
+  specs:{caps:[{name:'<1 second intake time',desc:'',when:'Bravo'},{name:'Minimum 24 ball storage',desc:'',when:'Bravo'},{name:'Under 22"',desc:'',when:'Bravo'},{name:'Level 1',desc:'',when:'Bravo'},{name:'Level 3',desc:'',when:'Charlie'},{name:'Hooded Shooter',desc:'',when:'Bravo'},{name:'Turreted Shooter',desc:'',when:'Bravo'},{name:"Shooter range 2-20'",desc:'',when:'Bravo'}],quals:[{name:'Weight',target:'',notes:''},{name:'CG',target:'',notes:''},{name:'Drivebase dimensions',target:'27×27"',notes:''},{name:'Drive gear ratio',target:'',notes:''},{name:'Drivebase type',target:'',notes:''},{name:'Reliability',target:'',notes:''}],prog:[{task:'Turret coded and tested with close and long range tracking',when:'Bravo',notes:'Critical path: 100% Mobility'},{task:'Hood with distance tracking and variation',when:'Bravo',notes:'Critical path: Touch it Own'},{task:'Flywheels tuned with exact velocity',when:'Bravo',notes:'Critical path: 100 in 1 Scoring'},{task:'"Do we have a ball" reflective sensors',when:'Bravo',notes:''},{task:'Full field localization',when:'Bravo',notes:''}]},
+  proto:{tasks:[{task:'Shooter compression, wheel compression, speed',lead:'Grayson',members:'',pri:'Must Do'},{task:'Intake wheel type, compression. Test star wheels and geko wheels.',lead:'Nick',members:'',pri:'Must Do'},{task:'Testing rubber coated belts for the transfer',lead:'Nisith',members:'',pri:'Must Do'}]},
+  eval:{overview:[{c:'Archetype',base:'',c1:'',c2:'',c3:''},{c:'Anticipated CPM',base:'',c1:'',c2:'',c3:''},{c:'Proven CAD Geometry?',base:'',c1:'',c2:'',c3:''}],simplicity:[{m:'Number of Subsystems',base:'',c1:'',c2:'',c3:''},{m:'Scoring DOFs',base:'',c1:'',c2:'',c3:''},{m:'Number of Handoffs',base:'',c1:'',c2:'',c3:''},{m:'Custom Concepts',base:'',c1:'',c2:'',c3:''}],matrix:[{lbl:'Design Difficulty (×1)',desc:'Custom designs, tight fits, many subsystems add difficulty',base:3,c1:0,c2:0,c3:0},{lbl:'Build Difficulty (×1)',desc:"Look at old robots — if we haven't done it before",base:3,c1:0,c2:0,c3:0},{lbl:'Programming Difficulty (×1)',desc:'Many DOFs and subsystems add difficulty',base:2,c1:0,c2:0,c3:0},{lbl:'Risk Level (×1)',desc:"How far within or outside of team's capabilities",base:3,c1:0,c2:0,c3:0},{lbl:'Robot Capability (×1)',desc:'CPM Performance',base:3,c1:0,c2:0,c3:0}]}
+};}
+
+async function loadWS(){
+  const{data}=await sb.from('worksheets').select('data').eq('user_id',viewUid).single();
+  D=data?.data?deepMerge(defaultData(),data.data):defaultData();
+}
+
+async function saveWS(){
+  D.email=user.email;
+  ['plan','gr','cpm','strat','specs','proto','eval'].forEach(k=>{const el=document.getElementById('n-'+k);if(el)D.notes[k]=el.value;});
+  const nel=document.getElementById('n-wg');if(nel)D.notes.wg=nel.value;
+  await sb.from('worksheets').upsert({user_id:viewUid,data:D,updated_at:new Date().toISOString()},{onConflict:'user_id'});
   showToast();
-  updateMatrixTotals();
 }
-function saveData(data) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+function as(){clearTimeout(saveT);saveT=setTimeout(saveWS,1200);}
+
+function showToast(){const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
+
+function deepMerge(a,b){const o=Object.assign({},a);for(const k in b){if(b[k]&&typeof b[k]==='object'&&!Array.isArray(b[k]))o[k]=deepMerge(a[k]||{},b[k]);else o[k]=b[k];}return o;}
+
+function showTab(id,btn){document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.getElementById('tab-'+id).classList.add('active');if(btn)btn.classList.add('active');}
+
+function renderAll(){
+  renderPlan();renderWG();renderGR();renderCPM();renderStrat();renderSpecs();renderProto();renderEval();
+  ['plan','gr','cpm','strat','specs','proto','eval'].forEach(k=>{const e=document.getElementById('n-'+k);if(e)e.value=D.notes?.[k]||'';});
+  const ne=document.getElementById('n-wg');if(ne)ne.value=D.notes?.wg||'';
 }
-function loadData() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
-  catch { return {}; }
-}
-function saveAll() {
-  const data = loadData();
-  document.querySelectorAll('[data-key]').forEach(el => {
-    data[el.dataset.key] = el.innerHTML;
+
+// ── PLAN ──
+function renderPlan(){
+  const c=document.getElementById('plan-body');c.innerHTML='';
+  let lastPhase='';
+  D.plan.forEach((g,gi)=>{
+    if(g.phase!==lastPhase){const p=el('div','phase-lbl');p.textContent=g.phase;c.appendChild(p);lastPhase=g.phase;}
+    const card=el('div','card');
+    const ct=el('div','ctitle');ct.textContent=g.section;card.appendChild(ct);
+    const ul=el('ul','checklist');
+    g.tasks.forEach((task,ti)=>{
+      const li=el('li');
+      const icon=el('span','chk'+(task.d?' done':''));icon.textContent=task.d?'✓':'';
+      icon.onclick=()=>{task.d=!task.d;icon.classList.toggle('done',task.d);icon.textContent=task.d?'✓':'';lbl.classList.toggle('done',task.d);as();};
+      const lbl=el('span','chk-lbl'+(task.d?' done':''));lbl.textContent=task.t;
+      const db=el('button','del-btn');db.textContent='✕';db.onclick=()=>{g.tasks.splice(ti,1);renderPlan();as();};
+      li.appendChild(icon);li.appendChild(lbl);li.appendChild(db);ul.appendChild(li);
+    });
+    card.appendChild(ul);
+    const ab=el('button','add-btn');ab.textContent='+ Add task';ab.onclick=()=>{const t=prompt('New task:');if(t){g.tasks.push({t,d:false});renderPlan();as();}};
+    card.appendChild(ab);c.appendChild(card);
   });
-  saveData(data);
 }
-function restoreData() {
-  const data = loadData();
-  Object.entries(data).forEach(([key, val]) => {
-    const el = document.querySelector(`[data-key="${key}"]`);
-    if (el) el.innerHTML = val;
+
+// ── WORK GROUPS ──
+function renderWG(){
+  const c=document.getElementById('wg-body');c.innerHTML='';
+  const wg=D.wg;
+  // Roster
+  const rCard=el('div','card');
+  const rTitle=el('div','ctitle');rTitle.textContent='Student Roster';rCard.appendChild(rTitle);
+  const rDesc=el('div');rDesc.style.cssText='font-size:12px;color:var(--muted);margin-bottom:8px;';rDesc.textContent='Manage the student roster. Use the dropdown in each subteam to assign members.';rCard.appendChild(rDesc);
+  const pool=el('div','pool');
+  wg.students.forEach((s,si)=>{
+    const chip=el('span','s-chip');chip.textContent=s;
+    const rm=el('span');rm.textContent=' ✕';rm.style.cssText='color:var(--dim);font-size:10px;cursor:pointer;';
+    rm.onclick=(e)=>{e.stopPropagation();if(confirm('Remove '+s+' from roster?')){wg.students.splice(si,1);wg.groups.forEach(g=>{const i=g.members.indexOf(s);if(i>-1)g.members.splice(i,1);});renderWG();as();}};
+    chip.appendChild(rm);pool.appendChild(chip);
   });
-  updateMatrixTotals();
-}
+  rCard.appendChild(pool);
+  const addRow=el('div','s-add-row');
+  const sInp=el('input','s-inp');sInp.placeholder='Add student name...';
+  const sBtn=el('button','sm-btn');sBtn.textContent='+ Add';
+  sBtn.onclick=()=>{const n=sInp.value.trim();if(n&&!wg.students.includes(n)){wg.students.push(n);sInp.value='';renderWG();as();}};
+  sInp.onkeydown=e=>{if(e.key==='Enter')sBtn.click();};
+  addRow.appendChild(sInp);addRow.appendChild(sBtn);rCard.appendChild(addRow);
+  c.appendChild(rCard);
 
-// ── TOAST ─────────────────────────────────────────────────────
-let toastTimer;
-function showToast() {
-  const t = document.getElementById('toast');
-  t.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
-}
+  // Groups
+  const ph=el('div','phase-lbl');ph.textContent='Design Subteams';c.appendChild(ph);
+  const gCard=el('div','card');
+  const gTitle=el('div','ctitle');gTitle.textContent='Subteam Assignments';gCard.appendChild(gTitle);
+  const tbl=el('table','dtbl');
+  tbl.innerHTML='<thead><tr><th>Subteam</th><th>Lead</th><th>CAD Lead</th><th>Members</th><th></th></tr></thead>';
+  const tbody=el('tbody');
+  wg.groups.forEach((g,gi)=>{
+    const tr=el('tr');
+    const tdN=el('td');tdN.appendChild(inp(g.name,'Subteam name...',v=>{g.name=v;}));tr.appendChild(tdN);
+    const tdL=el('td');tdL.appendChild(sel(['',...wg.students],g.lead,v=>{g.lead=v;}));tr.appendChild(tdL);
+    const tdC=el('td');tdC.appendChild(sel(['',...wg.students],g.cad,v=>{g.cad=v;}));tr.appendChild(tdC);
+    const tdM=el('td');
+    const mList=el('div');mList.style.cssText='display:flex;flex-wrap:wrap;min-height:28px;';
+    g.members.forEach((m,mi)=>{
+      const tag=el('span','m-tag');tag.innerHTML=`${m} <span class="rm" onclick="rmMember(${gi},${mi})">✕</span>`;mList.appendChild(tag);
+    });
+    const mSel=sel(['',...wg.students.filter(s=>!g.members.includes(s))],'',v=>{if(v){g.members.push(v);renderWG();as();}});
+    mSel.options[0].textContent='+ Add member';mSel.style.marginTop='4px';
+    tdM.appendChild(mList);tdM.appendChild(mSel);tr.appendChild(tdM);
+    const tdDel=el('td');const db=el('button','del-btn');db.textContent='✕';db.onclick=()=>{wg.groups.splice(gi,1);renderWG();as();};tdDel.appendChild(db);tr.appendChild(tdDel);
+    tbody.appendChild(tr);
+  });
+  tbl.appendChild(tbody);gCard.appendChild(tbl);
+  const gAdd=el('button','add-btn');gAdd.textContent='+ Add subteam';gAdd.onclick=()=>{wg.groups.push({name:'',lead:'',cad:'',members:[]});renderWG();as();};
+  gCard.appendChild(gAdd);c.appendChild(gCard);
 
-// ── TABS ──────────────────────────────────────────────────────
-function showTab(id, btn) {
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + id).classList.add('active');
-  if (btn) btn.classList.add('active');
-  else { /* triggered programmatically */ }
+  const ns=el('div','notes-sec');
+  const nt=el('div','notes-ttl');nt.textContent='Notes';ns.appendChild(nt);
+  const na=el('textarea','notes-area');na.id='n-wg';na.placeholder='Work group notes...';na.value=D.notes?.wg||'';na.oninput=()=>{D.notes.wg=na.value;as();};
+  ns.appendChild(na);c.appendChild(ns);
 }
+function rmMember(gi,mi){D.wg.groups[gi].members.splice(mi,1);renderWG();as();}
 
-// ── CHECKLIST ─────────────────────────────────────────────────
-function toggleCheck(icon) {
-  const li = icon.closest('li');
-  const label = li.querySelector('.check-label');
-  if (icon.classList.contains('done')) {
-    icon.classList.remove('done');
-    icon.textContent = '';
-    if (label) label.classList.remove('done');
-  } else {
-    icon.classList.add('done');
-    icon.textContent = '✓';
-    if (label) label.classList.add('done');
+// ── GAME RULES ──
+function renderGR(){
+  const c=document.getElementById('gr-body');c.innerHTML='';
+  const gr=D.gr;
+  function grTable(title,rows,cols,addFn){
+    const card=el('div','card');
+    const ct=el('div','ctitle');ct.textContent=title;card.appendChild(ct);
+    const tbl=el('table','dtbl');
+    const thead=el('thead');thead.innerHTML=`<tr>${cols.map(col=>`<th>${col.lbl}</th>`).join('')}<th></th></tr>`;tbl.appendChild(thead);
+    const tbody=el('tbody');
+    rows.forEach((row,ri)=>{
+      const tr=el('tr');
+      cols.forEach(col=>{
+        const td=el('td');
+        if(col.opts)td.appendChild(sel(col.opts,row[col.k],v=>{row[col.k]=v;}));
+        else td.appendChild(inp(row[col.k],col.ph||'',v=>{row[col.k]=v;}));
+        tr.appendChild(td);
+      });
+      const tdD=el('td');const db=el('button','del-btn');db.textContent='✕';db.onclick=()=>{rows.splice(ri,1);renderGR();as();};tdD.appendChild(db);tr.appendChild(tdD);
+      tbody.appendChild(tr);
+    });
+    tbl.appendChild(tbody);card.appendChild(tbl);
+    const ab=el('button','add-btn');ab.textContent='+ Add row';ab.onclick=()=>{addFn();renderGR();as();};card.appendChild(ab);
+    return card;
   }
-  saveAll();
+  c.appendChild(grTable('Intaking Locations',gr.intake,[{lbl:'Location',k:'loc',ph:'Location...'},{lbl:'Difficulty',k:'diff',opts:DIFF},{lbl:'Value',k:'val',opts:VAL}],()=>gr.intake.push({loc:'',diff:'',val:''})));
+  c.appendChild(grTable('Ranking Points',gr.rp,[{lbl:'Task',k:'task',ph:'Task...'},{lbl:'Points',k:'pts',ph:'Pts'},{lbl:'Difficulty',k:'diff',opts:DIFF}],()=>gr.rp.push({task:'',pts:'',diff:''})));
+  c.appendChild(grTable('Scoring',gr.scoring,[{lbl:'Task',k:'task',ph:'Task...'},{lbl:'Points',k:'pts',ph:'Pts'},{lbl:'Difficulty',k:'diff',opts:DIFF}],()=>gr.scoring.push({task:'',pts:'',diff:''})));
+  c.appendChild(grTable('Points Per Second',gr.pps,[{lbl:'Task',k:'task',ph:'Task...'},{lbl:'Time/Cycle',k:'time',ph:'sec'},{lbl:'Pts/Sec',k:'pps',ph:'pts/s'}],()=>gr.pps.push({task:'',time:'',pps:''})));
+  const g2=el('div','grid2');
+  g2.appendChild(grTable('Defense Opportunities',gr.defense,[{lbl:'Task',k:'task',ph:'Task...'},{lbl:'Difficulty',k:'diff',opts:DIFF},{lbl:'Value',k:'val',opts:VAL}],()=>gr.defense.push({task:'',diff:'',val:''})));
+  g2.appendChild(grTable('Penalties',gr.penalty,[{lbl:'Task',k:'task',ph:'Task...'},{lbl:'Penalty Pts',k:'pts',ph:'Pts'},{lbl:'Impact',k:'impact',opts:DIFF}],()=>gr.penalty.push({task:'',pts:'',impact:''})));
+  c.appendChild(g2);
+  c.appendChild(grTable('Design Constraints',gr.constraints,[{lbl:'Constraint',k:'name',ph:'Constraint...'},{lbl:'Value',k:'val',ph:'Value...'}],()=>gr.constraints.push({name:'',val:''})));
+  c.appendChild(grTable('Rules Q&A',gr.qa,[{lbl:'Question',k:'q',ph:'Question...'},{lbl:'Answer',k:'a',ph:'Answer from FIRST Q&A...'}],()=>gr.qa.push({q:'',a:''})));
 }
 
-// ── ADD ITEMS ─────────────────────────────────────────────────
-let dynCounter = 1000;
-function addListItem(listId, keyPrefix) {
-  if (!isAdmin) return;
-  const ul = document.getElementById(listId);
-  const key = keyPrefix + '-dyn' + (dynCounter++);
-  const li = document.createElement('li');
-  li.innerHTML = `<span class="del-row" onclick="delListItem(this)">✕</span> <span data-key="${key}" contenteditable="true" data-placeholder="New item...">&nbsp;</span>`;
-  ul.appendChild(li);
-  const span = li.querySelector('[data-key]');
-  span.addEventListener('blur', onFieldBlur);
-  span.focus();
+// ── CPM ──
+function renderCPM(){
+  const c=document.getElementById('cpm-body');c.innerHTML='';
+  const cpm=D.cpm;
+  const stats=el('div','grid3');stats.style.marginBottom='1rem';
+  [['cycles','Total Cycles'],['points','Total Points'],['time','Time Used']].forEach(([k,lbl])=>{
+    const d=el('div','cpm-stat');
+    const v=el('div','cpm-val');v.appendChild(inp(cpm[k],'—',val=>{cpm[k]=val;}));
+    const l=el('div','cpm-lbl');l.textContent=lbl;
+    d.appendChild(v);d.appendChild(l);stats.appendChild(d);
+  });
+  c.appendChild(stats);
+  const aCard=el('div','card');const at=el('div','ctitle');at.textContent='Assumptions';aCard.appendChild(at);
+  const ag=el('div');ag.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;font-size:13px;';
+  [['Scenario','scenario'],['Intake time','intake'],['Recover time','recover'],['Spin up time','spinup'],['Speed','speed'],['Cycle window','window']].forEach(([lbl,k])=>{
+    const d=el('div');const lb=el('span');lb.style.color='var(--muted)';lb.textContent=lbl+': ';d.appendChild(lb);d.appendChild(inp(cpm[k],lbl,v=>{cpm[k]=v;}));ag.appendChild(d);
+  });
+  aCard.appendChild(ag);c.appendChild(aCard);
+  const anCard=el('div','card');const ant=el('div','ctitle');ant.textContent='Analysis';anCard.appendChild(ant);
+  anCard.appendChild(txt(cpm.analysis,'Enter CPM analysis...',v=>{cpm.analysis=v;}));c.appendChild(anCard);
 }
 
-function addCheckItem(listId, keyPrefix) {
-  if (!isAdmin) return;
-  const ul = document.getElementById(listId);
-  const key = keyPrefix + '-dyn' + (dynCounter++);
-  const li = document.createElement('li');
-  li.innerHTML = `<span class="check-icon open" onclick="toggleCheck(this)"></span><span class="del-row" onclick="delListItem(this)">✕</span><span class="check-label" data-key="${key}" contenteditable="true" data-placeholder="New task...">&nbsp;</span>`;
-  ul.appendChild(li);
-  const span = li.querySelector('[data-key]');
-  span.addEventListener('blur', onFieldBlur);
-  span.focus();
-}
+// ── STRAT ──
+function renderStrat(){
+  const c=document.getElementById('strat-body');c.innerHTML='';
+  const st=D.strat;
+  const sCard=el('div','card');sCard.style.borderLeft='3px solid var(--accent)';
+  const st2=el('div','ctitle');st2.textContent='Strategy Summary';sCard.appendChild(st2);
+  sCard.appendChild(txt(st.summary,'Enter overall game strategy...',v=>{st.summary=v;}));c.appendChild(sCard);
 
-function addTableRow(tbodyId, cols, keyPrefixes, placeholders) {
-  if (!isAdmin) return;
-  const tbody = document.getElementById(tbodyId);
-  const prefixes = keyPrefixes.split(',');
-  const tr = document.createElement('tr');
-  let html = '';
-  for (let i = 0; i < cols; i++) {
-    const key = (prefixes[i] || prefixes[0]) + '-dyn' + (dynCounter++);
-    html += `<td><span data-key="${key}" contenteditable="true" data-placeholder="${placeholders[i] || '...'}">&nbsp;</span></td>`;
+  const aCard=el('div','card');const at=el('div','ctitle');at.textContent='Anticipated Robot Archetypes';aCard.appendChild(at);
+  const aTbl=el('table','dtbl');aTbl.innerHTML='<thead><tr><th>Archetype</th><th>Pros/Cons</th><th>CPM</th><th>Score Potential</th><th></th></tr></thead>';
+  const aBody=el('tbody');
+  st.archetypes.forEach((a,ai)=>{
+    const tr=el('tr');
+    [['name','Archetype...'],['pros','Pros/Cons...'],['cpm','CPM'],['score','Score']].forEach(([k,ph])=>{const td=el('td');td.appendChild(inp(a[k],ph,v=>{a[k]=v;}));tr.appendChild(td);});
+    const tdD=el('td');const db=el('button','del-btn');db.textContent='✕';db.onclick=()=>{st.archetypes.splice(ai,1);renderStrat();as();};tdD.appendChild(db);tr.appendChild(tdD);
+    aBody.appendChild(tr);
+  });
+  aTbl.appendChild(aBody);aCard.appendChild(aTbl);
+  const aAdd=el('button','add-btn');aAdd.textContent='+ Add archetype';aAdd.onclick=()=>{st.archetypes.push({name:'',pros:'',cpm:'',score:''});renderStrat();as();};
+  aCard.appendChild(aAdd);c.appendChild(aCard);
+
+  const swCard=el('div','card');const swT=el('div','ctitle');swT.textContent='SWOT Analysis';swCard.appendChild(swT);
+  const swGrid=el('div','swot-grid');
+  [['S','Strengths','s'],['W','Weaknesses','w'],['O','Opportunities','o'],['T','Threats + Countermeasures','t']].forEach(([cls,lbl,k])=>{
+    const cell=el('div','swot-cell '+cls);const sl=el('div','swot-lbl');sl.textContent=lbl;cell.appendChild(sl);
+    cell.appendChild(txt(st.swot[k],'Enter '+lbl.toLowerCase()+'...',v=>{st.swot[k]=v;}));swGrid.appendChild(cell);
+  });
+  swCard.appendChild(swGrid);c.appendChild(swCard);
+
+  function stTable(title,rows,cols,addFn){
+    const card=el('div','card');const ct=el('div','ctitle');ct.textContent=title;card.appendChild(ct);
+    const tbl=el('table','dtbl');tbl.innerHTML=`<thead><tr>${cols.map(col=>`<th>${col.lbl}</th>`).join('')}<th></th></tr></thead>`;
+    const tbody=el('tbody');
+    rows.forEach((row,ri)=>{
+      const tr=el('tr');
+      cols.forEach(col=>{const td=el('td');if(col.opts)td.appendChild(sel(col.opts,row[col.k],v=>{row[col.k]=v;}));else td.appendChild(inp(row[col.k],col.ph||'',v=>{row[col.k]=v;}));tr.appendChild(td);});
+      const tdD=el('td');const db=el('button','del-btn');db.textContent='✕';db.onclick=()=>{rows.splice(ri,1);renderStrat();as();};tdD.appendChild(db);tr.appendChild(tdD);tbody.appendChild(tr);
+    });
+    tbl.appendChild(tbody);card.appendChild(tbl);
+    const ab=el('button','add-btn');ab.textContent='+ Add';ab.onclick=()=>{addFn();renderStrat();as();};card.appendChild(ab);return card;
   }
-  html += `<td><span class="del-row" style="display:inline;" onclick="this.closest('tr').remove();saveAll()">✕</span></td>`;
-  tr.innerHTML = html;
-  tbody.appendChild(tr);
-  tr.querySelectorAll('[data-key]').forEach(el => el.addEventListener('blur', onFieldBlur));
-  tr.querySelector('[data-key]').focus();
+  c.appendChild(stTable('Engineering Solutions',st.eng,[{lbl:'Subsystem',k:'sub',ph:'Subsystem...'},{lbl:'Capability',k:'cap',ph:'Capability...'},{lbl:'Benefit',k:'ben',ph:'Benefit...'},{lbl:'Difficulty',k:'diff',opts:DIFF}],()=>st.eng.push({sub:'',cap:'',ben:'',diff:''})));
+  c.appendChild(stTable('Programming Solutions',st.prog,[{lbl:'Capability',k:'cap',ph:'Capability...'},{lbl:'Benefit',k:'ben',ph:'Benefit...'},{lbl:'Difficulty',k:'diff',opts:DIFF},{lbl:'Value',k:'val',opts:VAL}],()=>st.prog.push({cap:'',ben:'',diff:'',val:''})));
 }
 
-function addProtoRow() {
-  if (!isAdmin) return;
-  const tbody = document.getElementById('tbody-proto');
-  const n = dynCounter++;
-  const tr = document.createElement('tr');
-  tr.innerHTML = `
-    <td><span data-key="pt-t-${n}" contenteditable="true" data-placeholder="Task description...">&nbsp;</span></td>
-    <td><span data-key="pt-l-${n}" contenteditable="true" data-placeholder="Lead...">&nbsp;</span></td>
-    <td><span data-key="pt-m-${n}" contenteditable="true" data-placeholder="Members...">&nbsp;</span></td>
-    <td><span class="del-row" style="display:inline;" onclick="this.closest('tr').remove();saveAll()">✕</span></td>`;
-  tbody.appendChild(tr);
-  tr.querySelectorAll('[data-key]').forEach(el => el.addEventListener('blur', onFieldBlur));
-  tr.querySelector('[data-key]').focus();
+// ── SPECS ──
+function renderSpecs(){
+  const c=document.getElementById('specs-body');c.innerHTML='';
+  const sp=D.specs;
+  function spTable(title,rows,cols,addFn){
+    const card=el('div','card');const ct=el('div','ctitle');ct.textContent=title;card.appendChild(ct);
+    const tbl=el('table','dtbl');tbl.innerHTML=`<thead><tr>${cols.map(col=>`<th>${col.lbl}</th>`).join('')}<th></th></tr></thead>`;
+    const tbody=el('tbody');
+    rows.forEach((row,ri)=>{
+      const tr=el('tr');
+      cols.forEach(col=>{const td=el('td');if(col.opts)td.appendChild(sel(col.opts,row[col.k],v=>{row[col.k]=v;}));else td.appendChild(inp(row[col.k],col.ph||'',v=>{row[col.k]=v;}));tr.appendChild(td);});
+      const tdD=el('td');const db=el('button','del-btn');db.textContent='✕';db.onclick=()=>{rows.splice(ri,1);renderSpecs();as();};tdD.appendChild(db);tr.appendChild(tdD);tbody.appendChild(tr);
+    });
+    tbl.appendChild(tbody);card.appendChild(tbl);
+    const ab=el('button','add-btn');ab.textContent='+ Add row';ab.onclick=()=>{addFn();renderSpecs();as();};card.appendChild(ab);return card;
+  }
+  c.appendChild(spTable('Robot Capabilities',sp.caps,[{lbl:'Capability',k:'name',ph:'Capability...'},{lbl:'Description',k:'desc',ph:'Description...'},{lbl:'By When',k:'when',opts:MS}],()=>sp.caps.push({name:'',desc:'',when:''})));
+  c.appendChild(spTable('Robot Qualities',sp.quals,[{lbl:'Quality',k:'name',ph:'Quality...'},{lbl:'Target',k:'target',ph:'Target...'},{lbl:'Notes',k:'notes',ph:'Notes...'}],()=>sp.quals.push({name:'',target:'',notes:''})));
+  c.appendChild(spTable('Programming Priorities',sp.prog,[{lbl:'Task',k:'task',ph:'Task...'},{lbl:'By When',k:'when',opts:MS},{lbl:'Notes',k:'notes',ph:'Notes...'}],()=>sp.prog.push({task:'',when:'',notes:''})));
 }
 
-function delListItem(btn) {
-  if (!isAdmin) return;
-  btn.closest('li').remove();
-  saveAll();
+// ── PROTOTYPE ──
+function renderProto(){
+  const c=document.getElementById('proto-body');c.innerHTML='';
+  const pt=D.proto;
+  c.appendChild(el('div','info-box')).textContent='Be specific and detailed. State if CAD is required. Each task must be replicated in the EN with the end result.';
+  const card=el('div','card');const ct=el('div','ctitle');ct.textContent='Tasks';card.appendChild(ct);
+  const tbl=el('table','dtbl');tbl.innerHTML='<thead><tr><th>Task</th><th>Lead</th><th>Group Members</th><th>Priority</th><th></th></tr></thead>';
+  const tbody=el('tbody');
+  pt.tasks.forEach((task,ti)=>{
+    const tr=el('tr');
+    const tdT=el('td');tdT.appendChild(txt(task.task,'Task description...',v=>{task.task=v;}));tr.appendChild(tdT);
+    const tdL=el('td');tdL.appendChild(sel(['',...D.wg.students],task.lead,v=>{task.lead=v;}));tr.appendChild(tdL);
+    const tdM=el('td');tdM.appendChild(inp(task.members,'Members...',v=>{task.members=v;}));tr.appendChild(tdM);
+    const tdP=el('td');tdP.appendChild(sel(PRI,task.pri,v=>{task.pri=v;}));tr.appendChild(tdP);
+    const tdD=el('td');const db=el('button','del-btn');db.textContent='✕';db.onclick=()=>{pt.tasks.splice(ti,1);renderProto();as();};tdD.appendChild(db);tr.appendChild(tdD);
+    tbody.appendChild(tr);
+  });
+  tbl.appendChild(tbody);card.appendChild(tbl);
+  const ab=el('button','add-btn');ab.textContent='+ Add task';ab.onclick=()=>{pt.tasks.push({task:'',lead:'',members:'',pri:''});renderProto();as();};
+  card.appendChild(ab);c.appendChild(card);
 }
 
-// ── MATRIX TOTALS ─────────────────────────────────────────────
-function updateMatrixTotals() {
-  ['base','c1','c2','c3'].forEach(col => {
-    let total = 0; let valid = true;
-    for (let i = 1; i <= 5; i++) {
-      const el = document.querySelector(`[data-key="mx-${i}-${col}"]`);
-      const v = parseInt(el ? el.textContent.trim() : '');
-      if (isNaN(v)) { valid = false; break; }
-      total += v;
-    }
-    const out = document.getElementById('total-' + col);
-    if (out) out.textContent = valid ? total : '—';
+// ── EVAL ──
+function renderEval(){
+  const c=document.getElementById('eval-body');c.innerHTML='';
+  const ev=D.eval;
+
+  function evTable(title,rows,keyfn,addFn){
+    const card=el('div','card');const ct=el('div','ctitle');ct.textContent=title;card.appendChild(ct);
+    const tbl=el('table','dtbl');tbl.innerHTML='<thead><tr><th>'+keyfn('header')+'</th><th>Baseline</th><th>Concept 1</th><th>Concept 2</th><th>Concept 3</th></tr></thead>';
+    const tbody=el('tbody');
+    rows.forEach((row,ri)=>{
+      const tr=el('tr');
+      const td0=el('td');td0.appendChild(inp(row[keyfn('labelKey')],'...',v=>{row[keyfn('labelKey')]=v;}));tr.appendChild(td0);
+      ['base','c1','c2','c3'].forEach(k=>{const td=el('td');td.appendChild(inp(row[k],'—',v=>{row[k]=v;}));tr.appendChild(td);});
+      tbody.appendChild(tr);
+    });
+    tbl.appendChild(tbody);card.appendChild(tbl);
+    if(addFn){const ab=el('button','add-btn');ab.textContent='+ Add row';ab.onclick=()=>{addFn();renderEval();as();};card.appendChild(ab);}
+    return card;
+  }
+  c.appendChild(evTable('Concept Overview',ev.overview,k=>k==='header'?'Criteria':k==='labelKey'?'c':'?',()=>ev.overview.push({c:'',base:'',c1:'',c2:'',c3:''})));
+  c.appendChild(evTable('Simplicity Level',ev.simplicity,k=>k==='header'?'Metric':k==='labelKey'?'m':'?',()=>ev.simplicity.push({m:'',base:'',c1:'',c2:'',c3:''})));
+
+  const mCard=el('div','card');mCard.style.cssText='border-color:rgba(245,166,35,0.3);background:rgba(245,166,35,0.04);';
+  const mTitle=el('div','ctitle');mTitle.textContent='Weighted Matrix';mCard.appendChild(mTitle);
+  const mDesc=el('p');mDesc.style.cssText='font-size:12px;color:var(--muted);margin-bottom:1rem;';mDesc.textContent='Assign value 1–5 for each concept. Higher is better. Totals auto-calculate.';mCard.appendChild(mDesc);
+  ev.matrix.forEach((row,ri)=>{
+    const mRow=el('div','mx-row');
+    const mLbl=el('div','mx-label');mLbl.appendChild(inp(row.lbl,'Criterion...',v=>{row.lbl=v;}));mRow.appendChild(mLbl);
+    const mScores=el('div','mx-scores');
+    ['base','c1','c2','c3'].forEach((k,ki)=>{
+      const box=el('div','mx-box');
+      const lbl=el('label');lbl.textContent=['Base','C1','C2','C3'][ki];
+      const i=el('input');i.type='number';i.min=0;i.max=5;i.className='mx-inp'+(ki>0?' c':'');i.value=row[k]||0;
+      i.oninput=()=>{row[k]=parseInt(i.value)||0;updateTotals();as();};
+      box.appendChild(lbl);box.appendChild(i);mScores.appendChild(box);
+    });
+    mRow.appendChild(mScores);
+    const mD=el('div','mx-desc');mD.appendChild(inp(row.desc,'Description...',v=>{row.desc=v;}));mRow.appendChild(mD);
+    mCard.appendChild(mRow);
+  });
+  const tots=el('div','mx-totals');tots.id='mx-totals';
+  ['Base','C1','C2','C3'].forEach((lbl,i)=>{
+    const col=el('div','tot-col');
+    col.innerHTML=`<div class="tot-lbl">${lbl}</div><div class="tot-val${i>0?' c':''}" id="tot-${['base','c1','c2','c3'][i]}">0</div>`;
+    tots.appendChild(col);
+  });
+  mCard.appendChild(tots);c.appendChild(mCard);
+  updateTotals();
+}
+
+function updateTotals(){
+  ['base','c1','c2','c3'].forEach(k=>{
+    const s=D.eval.matrix.reduce((a,r)=>a+(parseInt(r[k])||0),0);
+    const e=document.getElementById('tot-'+k);if(e)e.textContent=s;
   });
 }
 
-// ── INIT ──────────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', () => {
-  restoreData();
-  // keyboard shortcut: Ctrl+Shift+A = open admin
-  document.addEventListener('keydown', e => {
-    if (e.ctrlKey && e.shiftKey && e.key === 'A') {
-      e.preventDefault();
-      handleAdminBtn();
-    }
-  });
+window.addEventListener('DOMContentLoaded',()=>{
+  sb.auth.getSession().then(({data:{session}})=>{if(!session)document.getElementById('auth-screen').style.display='flex';});
 });
 </script>
 </body>
