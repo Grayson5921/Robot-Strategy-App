@@ -1130,34 +1130,101 @@ function renderEval(){
   // DESIGN RISK MATRIX
   const dmCard=el('div','card');dmCard.style.cssText='border-color:rgba(230,58,46,0.2);';
   const dmTitle=el('div','ctitle');dmTitle.textContent='Design Risk Matrix';dmCard.appendChild(dmTitle);
-  const dmDesc=el('p');dmDesc.style.cssText='font-size:12px;color:var(--muted);margin-bottom:1rem;';dmDesc.textContent='Each cell represents a combination of consequence and risk level. Click a cell to edit the scenario and set its color.';dmCard.appendChild(dmDesc);
-  if(!ev.riskMatrix){ev.riskMatrix={rows:[{label:'Small Consequence',cells:[]},{label:'Medium Consequence',cells:[]},{label:'High Consequence',cells:[]}],riskLevels:['Low Risk','Medium Risk','High Risk']};}
-  ev.riskMatrix.rows.forEach(row=>{while(row.cells.length<ev.riskMatrix.riskLevels.length)row.cells.push({color:'green',text:''});});
+  const dmDesc=el('p');dmDesc.style.cssText='font-size:12px;color:var(--muted);margin-bottom:1rem;';dmDesc.textContent='Each cell shows which concept fits that consequence/risk combination. Green = low risk, Yellow = medium, Red = high.';dmCard.appendChild(dmDesc);
+
+  // Default color grid: row=consequence(small/med/high), col=risk(low/med/high)
+  // Pattern from reference: small=[G,G,G], med=[G,Y,Y], high=[G,Y,R]
+  const defaultColors=[['green','green','green'],['green','yellow','yellow'],['green','yellow','red']];
+
+  if(!ev.riskMatrix){
+    ev.riskMatrix={
+      rows:[
+        {label:'Small Consequence',cells:[{color:'green',conceptIdx:null},{color:'green',conceptIdx:null},{color:'green',conceptIdx:null}]},
+        {label:'Medium Consequence',cells:[{color:'green',conceptIdx:null},{color:'yellow',conceptIdx:null},{color:'yellow',conceptIdx:null}]},
+        {label:'High Consequence',cells:[{color:'green',conceptIdx:null},{color:'yellow',conceptIdx:null},{color:'red',conceptIdx:null}]},
+      ],
+      riskLevels:['Low Risk','Medium Risk','High Risk']
+    };
+  }
+  // Ensure cells exist and have correct structure
+  ev.riskMatrix.rows.forEach((row,ri)=>{
+    while(row.cells.length<ev.riskMatrix.riskLevels.length){
+      const ci=row.cells.length;
+      const color=(defaultColors[ri]&&defaultColors[ri][ci])||'green';
+      row.cells.push({color,conceptIdx:null});
+    }
+    // Migrate old text cells to new conceptIdx format
+    row.cells.forEach(cell=>{if(cell.conceptIdx===undefined)cell.conceptIdx=null;});
+  });
+
+  const colorMap={green:'rgba(46,204,113,0.25)',yellow:'rgba(245,166,35,0.35)',red:'rgba(230,58,46,0.35)'};
+  const conceptOptions=[{label:'— none —',value:null},...ev.concepts.map((con,i)=>({label:con.name||'Concept '+(i+1),value:i}))];
+
   const dmTbl=el('table','dtbl');dmTbl.style.cssText='table-layout:fixed;width:100%;';
   const dmHead=el('thead');const dmHtr=el('tr');
-  const th0=el('th');th0.style.width='130px';th0.innerHTML='<span style="font-size:11px;color:var(--muted);">Consequence / Risk</span>';dmHtr.appendChild(th0);
-  ev.riskMatrix.riskLevels.forEach((rl,ri)=>{const th=el('th');if(canEdit){const i=inp(rl,'Risk level...',v=>{ev.riskMatrix.riskLevels[ri]=v;changed('eval');});th.appendChild(i);}else th.textContent=rl;dmHtr.appendChild(th);});
+  const th0=el('th');th0.style.cssText='width:130px;font-size:11px;color:var(--muted);';th0.textContent='Consequence / Risk';dmHtr.appendChild(th0);
+  ev.riskMatrix.riskLevels.forEach((rl,ri)=>{
+    const th=el('th');
+    if(canEdit){const i=inp(rl,'Risk level...',v=>{ev.riskMatrix.riskLevels[ri]=v;changed('eval');});th.appendChild(i);}
+    else{th.textContent=rl;}
+    dmHtr.appendChild(th);
+  });
   dmHead.appendChild(dmHtr);dmTbl.appendChild(dmHead);
+
   const dmBody=el('tbody');
   ev.riskMatrix.rows.forEach((row,ri)=>{
     const tr=el('tr');
-    const tdLbl=el('td');tdLbl.style.cssText='font-size:12px;font-weight:500;padding:8px;background:var(--bg3);';
-    if(canEdit){const i=inp(row.label,'Consequence...',v=>{row.label=v;changed('eval');});tdLbl.appendChild(i);}else tdLbl.textContent=row.label;
+    const tdLbl=el('td');tdLbl.style.cssText='font-size:12px;font-weight:500;padding:8px;background:var(--bg3);vertical-align:middle;';
+    if(canEdit){const i=inp(row.label,'Consequence...',v=>{row.label=v;changed('eval');});tdLbl.appendChild(i);}
+    else tdLbl.textContent=row.label;
     tr.appendChild(tdLbl);
-    const colorMap={green:'rgba(46,204,113,0.25)',yellow:'rgba(245,166,35,0.35)',red:'rgba(230,58,46,0.35)'};
+
     row.cells.forEach((cell,ci)=>{
-      const td=el('td');td.style.cssText='background:'+colorMap[cell.color||'green']+';padding:6px 8px;vertical-align:top;';
+      const td=el('td');td.style.cssText='background:'+colorMap[cell.color||'green']+';padding:8px;vertical-align:middle;';
+
+      // Concept selector dropdown
+      const conSel=document.createElement('select');
+      conSel.style.cssText='width:100%;font-size:12px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);color:var(--text);border-radius:4px;padding:5px 7px;cursor:pointer;margin-bottom:6px;';
+      conSel.disabled=!canEdit;
+      conceptOptions.forEach(opt=>{
+        const o=document.createElement('option');
+        o.value=opt.value===null?'':opt.value;
+        o.textContent=opt.label;
+        if(cell.conceptIdx===opt.value)o.selected=true;
+        conSel.appendChild(o);
+      });
+      conSel.onchange=()=>{
+        cell.conceptIdx=conSel.value===''?null:parseInt(conSel.value);
+        changed('eval');
+      };
+      td.appendChild(conSel);
+
+      // Color selector (admin only)
       if(canEdit){
-        const cellTxt=txt(cell.text,'Describe scenario...',v=>{cell.text=v;changed('eval');});cellTxt.style.cssText='min-height:56px;background:transparent;border:none;font-size:12px;resize:vertical;';cellTxt.onfocus=()=>{cellTxt.style.background='rgba(0,0,0,0.2)';};cellTxt.onblur=()=>{cellTxt.style.background='transparent';};td.appendChild(cellTxt);
-        const colorSel=document.createElement('select');colorSel.style.cssText='width:100%;font-size:11px;margin-top:4px;background:rgba(0,0,0,0.35);border:none;color:var(--text);border-radius:3px;padding:2px;cursor:pointer;';
-        [['green','Low risk'],['yellow','Med risk'],['red','High risk']].forEach(([v,lbl])=>{const o=document.createElement('option');o.value=v;o.textContent=lbl;if(v===cell.color)o.selected=true;colorSel.appendChild(o);});
-        colorSel.onchange=()=>{cell.color=colorSel.value;td.style.background=colorMap[cell.color];changed('eval');};td.appendChild(colorSel);
-      } else {const p=document.createElement('p');p.style.cssText='font-size:12px;color:var(--text);white-space:pre-wrap;';p.textContent=cell.text;td.appendChild(p);}
+        const colorSel=document.createElement('select');
+        colorSel.style.cssText='width:100%;font-size:11px;background:rgba(0,0,0,0.35);border:none;color:var(--text);border-radius:3px;padding:2px;cursor:pointer;';
+        [['green','🟢 Low risk'],['yellow','🟡 Med risk'],['red','🔴 High risk']].forEach(([v,lbl])=>{
+          const o=document.createElement('option');o.value=v;o.textContent=lbl;if(v===cell.color)o.selected=true;colorSel.appendChild(o);
+        });
+        colorSel.onchange=()=>{cell.color=colorSel.value;td.style.background=colorMap[cell.color];changed('eval');};
+        td.appendChild(colorSel);
+      }
       tr.appendChild(td);
     });
     dmBody.appendChild(tr);
   });
-  if(canEdit){const addTr=el('tr');const addTd=el('td');addTd.colSpan=ev.riskMatrix.riskLevels.length+1;const addBtn=el('button');addBtn.style.cssText='width:100%;background:none;border:1px dashed var(--dim);border-radius:4px;color:var(--dim);font-size:12px;padding:6px;cursor:pointer;margin-top:4px;';addBtn.textContent='+ Add consequence row';addBtn.onclick=()=>{ev.riskMatrix.rows.push({label:'Consequence',cells:Array.from({length:ev.riskMatrix.riskLevels.length},()=>({color:'green',text:''}))});renderEval();changed('eval');};addTd.appendChild(addBtn);addTr.appendChild(addTd);dmBody.appendChild(addTr);}
+
+  if(canEdit){
+    const addTr=el('tr');const addTd=el('td');addTd.colSpan=ev.riskMatrix.riskLevels.length+1;
+    const addBtn=el('button');addBtn.style.cssText='width:100%;background:none;border:1px dashed var(--dim);border-radius:4px;color:var(--dim);font-size:12px;padding:6px;cursor:pointer;margin-top:4px;';
+    addBtn.textContent='+ Add consequence row';
+    addBtn.onclick=()=>{
+      const newCells=ev.riskMatrix.riskLevels.map(()=>({color:'green',conceptIdx:null}));
+      ev.riskMatrix.rows.push({label:'Consequence',cells:newCells});
+      renderEval();changed('eval');
+    };
+    addTd.appendChild(addBtn);addTr.appendChild(addTd);dmBody.appendChild(addTr);
+  }
   dmTbl.appendChild(dmBody);dmCard.appendChild(dmTbl);c.appendChild(dmCard);
 
   // WEIGHTED MATRIX (dynamic columns)
