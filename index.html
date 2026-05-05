@@ -681,7 +681,7 @@ function defaultSection(sec){
       {phase:'Develop Concepts',section:'Brainstorm & Prototype',items:[{t:'Sketch/KCAD in relation to field/game elements',d:false},{t:'Show geometrical proof against field/game elements',d:false},{t:'Develop & assign prototype/proof of concept tasks',d:false},{t:'Review Ri3D designs',d:false},{t:'Assess Everybot / REVbot / WCPbot',d:false}]},
       {phase:'Choose Concept',section:'Final Selection',items:[{t:'Choose concept, kitbot, or hybrid',d:false},{t:'Update EN with Robot Concept and requirements/constraints',d:false}]},
     ],notes:''},
-    wg:{students:['Nisith','Grayson','Brady','Nick','Malak','James','Amy','Drew','Abbey','Saina','Madison','Garrett','Kevin'],groups:[{name:'Drive Base',lead:'',cad:'',members:[]},{name:'Intake',lead:'',cad:'',members:[]},{name:'Scoring',lead:'',cad:'',members:[]},{name:'Climb',lead:'',cad:'',members:[]},{name:'Index',lead:'',cad:'',members:[]}],notes:''},
+    wg:{students:[],groups:[{name:'Drive Base',lead:'',cad:'',members:[]},{name:'Intake',lead:'',cad:'',members:[]},{name:'Scoring',lead:'',cad:'',members:[]},{name:'Climb',lead:'',cad:'',members:[]},{name:'Index',lead:'',cad:'',members:[]}],notes:''},
     gr:{intake:[{loc:'',diff:'',val:''}],rp:[{task:'',pts:'',diff:''}],scoring:[{task:'',pts:'',diff:''}],pps:[{task:'',time:'',pps:''}],defense:[{task:'',diff:'',val:''}],penalty:[{task:'',pts:'',impact:''}],constraints:[{name:'Max Frame Size',val:'27.5 × 27.5" MAX'}],qa:[{q:'',a:''}],notes:''},
     cpm:{scenario:'Drive to pose Shooter (positions 4,5,6,7)',cycles:'10',points:'264',time:'69.6s',intake:'10 sec',recover:'0.081 sec',spinup:'0.9 sec',speed:'10 fps',window:'105 sec (omits 15s auton + 30s endgame)',analysis:'Shooters require time to spin up and recover between shots.',notes:''},
     strat:{summary:'',archetypes:[{name:'',pros:'',cpm:'',score:'~50'},{name:'',pros:'',cpm:'',score:'~80'},{name:'',pros:'',cpm:'',score:'~120'},{name:'',pros:'',cpm:'',score:'~200'}],swot:{s:'',w:'',o:'',t:''},eng:[{sub:'',cap:'',ben:'',diff:''}],prog:[{cap:'',ben:'',diff:'',val:''}],notes:''},
@@ -900,23 +900,6 @@ function renderGR(){
 // ── CPM ──
 function renderCPM(){
   const c=document.getElementById('cpm-body');if(!c)return;c.innerHTML='';
-  const cpm=D.cpm;if(!cpm)return;
-  const stats=el('div','grid3');stats.style.marginBottom='1rem';
-  [['cycles','Total Cycles'],['points','Total Points'],['time','Time Used']].forEach(([k,lbl])=>{
-    const d=el('div','cpm-stat');
-    const v=el('div','cpm-val');const i=inp(cpm[k],'—',val=>{cpm[k]=val;changed('cpm');},!canEdit);i.style.textAlign='center';v.appendChild(i);
-    const l=el('div','cpm-lbl');l.textContent=lbl;d.appendChild(v);d.appendChild(l);stats.appendChild(d);
-  });
-  c.appendChild(stats);
-  const aCard=el('div','card');const at=el('div','ctitle');at.textContent='Assumptions';aCard.appendChild(at);
-  const ag=el('div');ag.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;';
-  [['Scenario','scenario'],['Intake time','intake'],['Recover time','recover'],['Spin up time','spinup'],['Speed','speed'],['Cycle window','window']].forEach(([lbl,k])=>{
-    const d=el('div');const lb=el('div');lb.style.cssText='font-size:11px;color:var(--muted);font-family:"IBM Plex Mono",monospace;margin-bottom:3px;';lb.textContent=lbl;
-    d.appendChild(lb);d.appendChild(inp(cpm[k],lbl,v=>{cpm[k]=v;changed('cpm');},!canEdit));ag.appendChild(d);
-  });
-  aCard.appendChild(ag);c.appendChild(aCard);
-  const anCard=el('div','card');const ant=el('div','ctitle');ant.textContent='Analysis';anCard.appendChild(ant);
-  anCard.appendChild(txt(cpm.analysis,'Enter CPM analysis...',v=>{cpm.analysis=v;changed('cpm');},!canEdit));c.appendChild(anCard);
 }
 
 // ── STRATEGY ──
@@ -1244,11 +1227,19 @@ function simRenderPath(){
   });
 }
 
-function simTrapTime(dist,vmax,accel){
+// Physics: time to travel dist from speed v0 to v1, max speed vmax, acceleration accel
+// Robot maintains speed through transit points, decelerates to stop only at action points
+function simSegTime(dist,v0,v1,vmax,accel){
   if(dist<=0)return 0;
-  const tA=vmax/accel,dA=0.5*accel*tA*tA;
-  if(2*dA>=dist)return 2*Math.sqrt(dist/accel);
-  return 2*tA+(dist-2*dA)/vmax;
+  // Peak speed achievable given start/end speeds and distance
+  // v_peak = sqrt(accel*dist + 0.5*(v0^2+v1^2)) using energy balance
+  const vPeak=Math.min(vmax, Math.sqrt(accel*dist + 0.5*(v0*v0+v1*v1)));
+  const dAccel=(vPeak*vPeak - v0*v0)/(2*accel);
+  const dDecel=(vPeak*vPeak - v1*v1)/(2*accel);
+  const dCruise=Math.max(0, dist - dAccel - dDecel);
+  const tAccel=(vPeak - v0)/accel;
+  const tDecel=(vPeak - v1)/accel;
+  return tAccel + dCruise/vPeak + tDecel;
 }
 
 window.simCalcPath=function(){
@@ -1260,26 +1251,64 @@ window.simCalcPath=function(){
     const sl=document.getElementById('sim-seg-list');if(sl)sl.innerHTML='<div style="font-size:12px;color:var(--muted);padding:3px;">Add 2+ path steps to see timing.</div>';
     return;
   }
-  let tT=0,aT=0;const segs=[];
-  for(let i=0;i<pathPts.length-1;i++){
+
+  const n=pathPts.length;
+  function mustStop(p){return p.type!=='transit';}
+
+  // Compute distances between consecutive waypoints
+  const dists=[];
+  for(let i=0;i<n-1;i++){
     const a=pathPts[i],b=pathPts[i+1];
-    const dist=Math.sqrt((b.fx-a.fx)**2+(b.fy-a.fy)**2);
-    const t=simTrapTime(dist,vmax,accel);
-    const act=a.type!=='transit'?a.duration:0;
-    tT+=t;aT+=act;segs.push({from:a.name,to:b.name,dist,travel:t,action:act,step:i+1});
+    dists.push(Math.sqrt((b.fx-a.fx)**2+(b.fy-a.fy)**2));
   }
-  const last=pathPts[pathPts.length-1];
-  if(last.type!=='transit')aT+=last.duration;
+
+  // Forward pass: max reachable speed at each waypoint
+  const vFwd=new Array(n).fill(0);
+  for(let i=1;i<n;i++){
+    if(mustStop(pathPts[i])){vFwd[i]=0;continue;}
+    vFwd[i]=Math.min(vmax, Math.sqrt(vFwd[i-1]*vFwd[i-1]+2*accel*dists[i-1]));
+  }
+
+  // Backward pass: max speed at each waypoint given future deceleration needs
+  const vBwd=new Array(n).fill(0);
+  for(let i=n-2;i>=0;i--){
+    if(mustStop(pathPts[i])){vBwd[i]=0;continue;}
+    vBwd[i]=Math.min(vmax, Math.sqrt(vBwd[i+1]*vBwd[i+1]+2*accel*dists[i]));
+  }
+
+  // Actual speed at each waypoint = intersection of fwd and bwd constraints
+  const speeds=pathPts.map((_,i)=>Math.min(vFwd[i],vBwd[i]));
+  // Endpoints always 0
+  speeds[0]=0; speeds[n-1]=0;
+
+  let tT=0,aT=0;const segs=[];
+  for(let i=0;i<n-1;i++){
+    const a=pathPts[i],b=pathPts[i+1];
+    const v0=speeds[i],v1=speeds[i+1];
+    const t=simSegTime(dists[i],v0,v1,vmax,accel);
+    const act=mustStop(a)?a.duration:0;
+    const isThrough=!mustStop(a)&&i>0;
+    tT+=t;aT+=act;
+    segs.push({from:a.name,to:b.name,dist:dists[i],travel:t,action:act,step:i+1,through:isThrough,entrySpeed:v0,exitSpeed:v1});
+  }
+  const last=pathPts[n-1];
+  if(mustStop(last))aT+=last.duration;
+
   const setV=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
-  setV('sim-r-total',(tT+aT).toFixed(2));setV('sim-r-travel',tT.toFixed(2));setV('sim-r-action',aT.toFixed(2));
+  setV('sim-r-total',(tT+aT).toFixed(2));
+  setV('sim-r-travel',tT.toFixed(2));
+  setV('sim-r-action',aT.toFixed(2));
+
   const sl=document.getElementById('sim-seg-list');if(!sl)return;sl.innerHTML='';
   segs.forEach(s=>{
     const row=document.createElement('div');row.className='sim-seg-row';
-    row.innerHTML='<span class="sim-seg-lbl">Step '+s.step+': '+s.from+' → '+s.to+' ('+s.dist.toFixed(1)+'ft)</span>'
-      +'<span class="sim-seg-val">'+s.travel.toFixed(2)+'s'+(s.action>0?' + '+s.action+'s':'')+'</span>';
+    const throughTag=s.through?'<span style="color:var(--green);font-size:10px;margin-left:3px;">continuous</span>':'';
+    const speedNote=s.entrySpeed>0.1?'<span style="color:var(--dim);font-size:10px;margin-left:3px;">'+s.entrySpeed.toFixed(1)+'→'+s.exitSpeed.toFixed(1)+'ft/s</span>':'';
+    row.innerHTML='<span class="sim-seg-lbl">Step '+s.step+': '+s.from+' → '+s.to+' ('+s.dist.toFixed(1)+'ft)'+throughTag+speedNote+'</span>'
+      +'<span class="sim-seg-val">'+s.travel.toFixed(2)+'s'+(s.action>0?' + '+s.action+'s action':'')+'</span>';
     sl.appendChild(row);
   });
-  if(last.type!=='transit'&&last.duration>0){
+  if(mustStop(last)&&last.duration>0){
     const row=document.createElement('div');row.className='sim-seg-row';
     row.innerHTML='<span class="sim-seg-lbl">Final: '+last.name+' ['+SIM_LABELS[last.type]+']</span><span class="sim-seg-val">'+last.duration+'s action</span>';
     sl.appendChild(row);
