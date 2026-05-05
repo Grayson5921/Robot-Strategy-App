@@ -141,6 +141,61 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .cpm-stat{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;text-align:center;}
 .cpm-val{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;color:var(--accent2);}
 .cpm-lbl{font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-top:2px;}
+/* FIELD SIMULATOR */
+.sim-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem 1.5rem;margin-top:1rem;}
+.sim-title{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent2);margin-bottom:1rem;display:flex;align-items:center;gap:8px;}
+.sim-title::before{content:'';display:inline-block;width:3px;height:13px;background:var(--accent);border-radius:2px;}
+.sim-toolbar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:8px 10px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--border);margin-bottom:10px;}
+.sim-toolbar label{font-size:12px;color:var(--muted);}
+.sim-toolbar input[type=number]{width:58px;background:var(--bg2);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:12px;padding:4px 6px;}
+.sim-toolbar input[type=number]:focus{outline:none;border-color:var(--accent);}
+.sim-toolbar select{background:var(--bg2);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:12px;padding:4px 6px;cursor:pointer;}
+.sim-toolbar select option{background:var(--bg2);}
+.sim-sep{width:1px;height:20px;background:var(--border2);margin:0 2px;}
+.sim-upload-lbl{background:var(--bg2);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:12px;padding:5px 10px;cursor:pointer;}
+.sim-upload-lbl:hover{border-color:var(--accent2);}
+.sim-canvas-wrap{position:relative;width:100%;border:1px solid var(--border2);border-radius:var(--radius);overflow:hidden;background:#0d0f14;cursor:crosshair;margin-bottom:10px;}
+.sim-canvas-wrap canvas{display:block;width:100%;height:auto;}
+.sim-grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.sim-panel{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;}
+.sim-panel-title{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;}
+.sim-pt-list{display:flex;flex-direction:column;gap:3px;max-height:140px;overflow-y:auto;}
+.sim-pt-row{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);padding:3px 6px;border-radius:4px;cursor:pointer;}
+.sim-pt-row:hover{background:var(--bg2);color:var(--text);}
+.sim-pt-row.sel{background:var(--bg2);color:var(--text);}
+.sim-pt-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.sim-del{background:none;border:none;color:var(--dim);cursor:pointer;font-size:12px;padding:0 3px;}
+.sim-del:hover{color:var(--accent2);}
+.sim-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px;}
+.sim-stat{background:var(--bg2);border-radius:var(--radius);padding:7px 9px;}
+.sim-stat-val{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--accent2);}
+.sim-stat-lbl{font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace;}
+.sim-seg-list{display:flex;flex-direction:column;gap:3px;max-height:110px;overflow-y:auto;}
+.sim-seg-row{display:flex;justify-content:space-between;font-size:11px;padding:3px 6px;border-radius:4px;background:var(--bg2);}
+.sim-seg-lbl{color:var(--muted);}
+.sim-seg-val{color:var(--text);font-weight:500;}
+.sim-edit{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;margin-bottom:10px;}
+.sim-edit-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;}
+.sim-edit-row label{font-size:12px;color:var(--muted);min-width:80px;}
+.sim-edit-row input,.sim-edit-row select{background:var(--bg2);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:12px;padding:4px 7px;flex:1;min-width:80px;}
+.sim-edit-row input:focus,.sim-edit-row select:focus{outline:none;border-color:var(--accent);}
+.sim-path-wrap{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;margin-bottom:10px;}
+.sim-path-steps{display:flex;flex-wrap:wrap;gap:5px;min-height:30px;margin-bottom:8px;padding:6px;background:var(--bg2);border-radius:var(--radius);border:1px dashed var(--border2);align-items:center;}
+.sim-chip{display:inline-flex;align-items:center;gap:3px;border-radius:100px;padding:3px 9px;font-size:11px;font-weight:600;}
+.sim-chip .crm{cursor:pointer;font-size:10px;opacity:0.6;margin-left:2px;}
+.sim-chip .crm:hover{opacity:1;}
+.sim-path-add{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.sim-path-add select{background:var(--bg2);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:12px;padding:4px 7px;flex:1;min-width:120px;}
+.sim-path-add select option{background:var(--bg2);}
+.sim-guide{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;margin-top:10px;}
+.sim-guide-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.sim-guide-row select{background:var(--bg2);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:12px;padding:4px 7px;flex:1;}
+.sim-guide-row select option{background:var(--bg2);}
+.sim-physics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
+.sim-physics>div>div:first-child{font-size:11px;color:var(--muted);margin-bottom:3px;font-family:'IBM Plex Mono',monospace;}
+.sim-physics input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:13px;padding:5px 8px;}
+.sim-physics input:focus{outline:none;border-color:var(--accent);}
+@media(max-width:700px){.sim-grid2{grid-template-columns:1fr;}}
 
 /* MATRIX */
 .mx-row{display:flex;align-items:center;gap:0.75rem;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px;flex-wrap:wrap;}
@@ -289,6 +344,104 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
   <div id="tab-cpm" class="tab-content">
     <div class="view-banner" id="vb-cpm">🔒 View only — unlock to edit this sheet</div>
     <div id="cpm-body"><div class="loading-msg">Loading...</div></div>
+
+    <div class="sim-wrap">
+      <div class="sim-title">Field Path Simulator</div>
+
+      <div class="sim-toolbar">
+        <label>Mode:</label>
+        <select id="sim-mode" onchange="simSetMode(this.value)">
+          <option value="place">Place point</option>
+          <option value="move">Move point</option>
+        </select>
+        <div class="sim-sep"></div>
+        <label>Field W (ft):</label>
+        <input type="number" id="sim-fw" value="54" min="1" max="300" onchange="simRedraw()">
+        <label>H (ft):</label>
+        <input type="number" id="sim-fh" value="27" min="1" max="300" onchange="simRedraw()">
+        <div class="sim-sep"></div>
+        <label class="sim-upload-lbl">
+          Upload field image
+          <input type="file" id="sim-img-upload" accept="image/*" style="display:none;" onchange="simLoadImg(event)">
+        </label>
+        <button onclick="simClearAll()" style="font-size:12px;padding:5px 10px;">Clear all</button>
+      </div>
+
+      <div class="sim-canvas-wrap">
+        <canvas id="sim-canvas" width="900" height="450"></canvas>
+      </div>
+
+      <div class="sim-edit" id="sim-edit-panel" style="display:none;">
+        <div style="font-size:13px;font-weight:600;color:var(--accent2);margin-bottom:8px;" id="sim-edit-title">Edit point</div>
+        <div class="sim-edit-row">
+          <label>Name</label>
+          <input type="text" id="sim-ep-name" oninput="simUpdatePoint('name',this.value)">
+          <label>Type</label>
+          <select id="sim-ep-type" onchange="simUpdatePoint('type',this.value)">
+            <option value="transit">Transit</option>
+            <option value="shoot">Shoot</option>
+            <option value="intake">Intake</option>
+            <option value="wait">Wait / Idle</option>
+            <option value="climb">Climb</option>
+            <option value="custom">Custom</option>
+          </select>
+        </div>
+        <div class="sim-edit-row" id="sim-ep-dur-row" style="display:none;">
+          <label>Action time (s)</label>
+          <input type="number" id="sim-ep-dur" value="0" min="0" step="0.1" oninput="simUpdatePoint('duration',parseFloat(this.value)||0)">
+          <label>Description</label>
+          <input type="text" id="sim-ep-desc" placeholder="e.g. shoot 3 notes" oninput="simUpdatePoint('desc',this.value)">
+        </div>
+      </div>
+
+      <div class="sim-physics">
+        <div><div>Max speed (ft/s)</div><input type="number" id="sim-speed" value="16" min="1" max="50" step="0.5" oninput="simCalcPath()"></div>
+        <div><div>Acceleration (ft/s²)</div><input type="number" id="sim-accel" value="12" min="1" max="60" step="0.5" oninput="simCalcPath()"></div>
+        <div><div>Weight (lbs)</div><input type="number" id="sim-weight" value="120" min="1" max="300" oninput="simCalcPath()"></div>
+      </div>
+
+      <div class="sim-grid2">
+        <div class="sim-panel">
+          <div class="sim-panel-title">Waypoints</div>
+          <div class="sim-pt-list" id="sim-pt-list"><div style="font-size:12px;color:var(--muted);">Click field to place waypoints.</div></div>
+        </div>
+        <div class="sim-panel">
+          <div class="sim-panel-title">Timing results</div>
+          <div class="sim-stats">
+            <div class="sim-stat"><div class="sim-stat-val" id="sim-r-total">—</div><div class="sim-stat-lbl">Total (s)</div></div>
+            <div class="sim-stat"><div class="sim-stat-val" id="sim-r-travel">—</div><div class="sim-stat-lbl">Travel (s)</div></div>
+            <div class="sim-stat"><div class="sim-stat-val" id="sim-r-action">—</div><div class="sim-stat-lbl">Actions (s)</div></div>
+          </div>
+          <div class="sim-seg-list" id="sim-seg-list"><div style="font-size:12px;color:var(--muted);padding:3px;">Add 2+ path steps to see timing.</div></div>
+        </div>
+      </div>
+
+      <div class="sim-path-wrap">
+        <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px;">Robot path <span style="font-weight:400;color:var(--muted);font-size:11px;">— revisit any point as many times as needed</span></div>
+        <div class="sim-path-steps" id="sim-path-steps"><span style="font-size:12px;color:var(--muted);">Path is empty — add steps below</span></div>
+        <div class="sim-path-add">
+          <select id="sim-path-sel"><option value="">— select waypoint —</option></select>
+          <button onclick="simAddPathStep()" style="font-size:12px;padding:5px 10px;">+ Add to path</button>
+          <button onclick="simUndoPath()" style="font-size:12px;padding:5px 10px;">Undo last</button>
+          <button onclick="simClearPath()" style="font-size:12px;padding:5px 10px;">Clear path</button>
+        </div>
+      </div>
+
+      <div class="sim-guide">
+        <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px;">Field image prep guide</div>
+        <div class="sim-guide-row">
+          <select id="sim-game-sel">
+            <option value="2026">FRC 2026 (current season)</option>
+            <option value="2025">FRC 2025 — Reefscape</option>
+            <option value="2024">FRC 2024 — Crescendo</option>
+            <option value="custom">Custom / other game</option>
+          </select>
+          <button onclick="simAskGuide()" style="font-size:12px;padding:5px 12px;">Ask Claude in chat ↗</button>
+        </div>
+        <div style="font-size:11px;color:var(--dim);margin-top:6px;">Clicking above sends the question to Claude in this chat — you'll get step-by-step instructions for cropping and scaling the official field image.</div>
+      </div>
+    </div>
+
     <div class="notes-sec"><div class="notes-ttl">Notes</div><textarea class="notes-area" id="n-cpm" placeholder="Notes for CPM Analysis..." oninput="changed('cpm')"></textarea></div>
   </div>
   <div id="tab-strat" class="tab-content">
@@ -937,6 +1090,265 @@ function updateTotals(){
 window.addEventListener('error',e=>console.error('App error:',e.message,e.lineno));
 loadSheets();
 subscribeSheetsList();
+
+// ── FIELD SIMULATOR ──
+(function(){
+const SIM_COLORS={transit:'#3a8ef5',shoot:'#e63a2e',intake:'#2ecc71',wait:'#f5a623',climb:'#a855f7',custom:'#ec4899'};
+const SIM_LABELS={transit:'Transit',shoot:'Shoot',intake:'Intake',wait:'Wait',climb:'Climb',custom:'Custom'};
+let sCanvas,sCtx,sImg=null,sPts=[],sPath=[],sMode='place',sSelIdx=-1,sDragging=-1,sDragOff={x:0,y:0},sNextId=1;
+
+function simInit(){
+  sCanvas=document.getElementById('sim-canvas');
+  if(!sCanvas)return;
+  sCtx=sCanvas.getContext('2d');
+  sCanvas.addEventListener('mousedown',simMouseDown);
+  sCanvas.addEventListener('mousemove',simMouseMove);
+  sCanvas.addEventListener('mouseup',()=>{sDragging=-1;if(sMode==='move')sCanvas.style.cursor='grab';});
+  sCanvas.addEventListener('mouseleave',()=>{sDragging=-1;});
+  simRedraw();simRenderPtList();simRenderPath();simUpdatePathSel();simCalcPath();
+}
+
+window.simLoadImg=function(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    const i=new Image();
+    i.onload=()=>{sImg=i;sCanvas.width=900;sCanvas.height=Math.round(900*(i.height/i.width));simRedraw();};
+    i.src=ev.target.result;
+  };
+  r.readAsDataURL(f);
+};
+
+window.simSetMode=function(m){sMode=m;sCanvas.style.cursor=m==='place'?'crosshair':'grab';};
+window.simClearAll=function(){sPts=[];sPath=[];sSelIdx=-1;sNextId=1;simRedraw();simCalcPath();simRenderPtList();simRenderPath();simUpdatePathSel();document.getElementById('sim-edit-panel').style.display='none';};
+
+function sCW(){return sCanvas.width;}
+function sCH(){return sCanvas.height;}
+function sFW(){return parseFloat(document.getElementById('sim-fw').value)||54;}
+function sFH(){return parseFloat(document.getElementById('sim-fh').value)||27;}
+function sPxToFt(x,y){return{fx:x*(sFW()/sCW()),fy:y*(sFH()/sCH())};}
+function sFtToPx(p){return{x:p.fx*(sCW()/sFW()),y:p.fy*(sCH()/sFH())};}
+
+function simMouseDown(e){
+  const r=sCanvas.getBoundingClientRect();
+  const sx=sCanvas.width/r.width,sy=sCanvas.height/r.height;
+  const cx=(e.clientX-r.left)*sx,cy=(e.clientY-r.top)*sy;
+  if(sMode==='place'){
+    const hi=simHitTest(cx,cy);
+    if(hi>=0){sSelIdx=hi;simShowEdit(hi);simRenderPtList();simRedraw();return;}
+    const fp=sPxToFt(cx,cy);
+    const id=sNextId++;
+    sPts.push({id,name:'P'+id,fx:fp.fx,fy:fp.fy,type:'transit',duration:0,desc:''});
+    sSelIdx=sPts.length-1;
+    simRedraw();simRenderPtList();simUpdatePathSel();simShowEdit(sSelIdx);
+  } else {
+    const hi=simHitTest(cx,cy);
+    if(hi>=0){sDragging=hi;const cp=sFtToPx(sPts[hi]);sDragOff={x:cx-cp.x,y:cy-cp.y};sCanvas.style.cursor='grabbing';sSelIdx=hi;simShowEdit(hi);simRenderPtList();simRedraw();}
+  }
+}
+
+function simMouseMove(e){
+  if(sDragging<0)return;
+  const r=sCanvas.getBoundingClientRect();
+  const sx=sCanvas.width/r.width,sy=sCanvas.height/r.height;
+  const cx=(e.clientX-r.left)*sx-sDragOff.x,cy=(e.clientY-r.top)*sy-sDragOff.y;
+  const fp=sPxToFt(cx,cy);
+  sPts[sDragging].fx=Math.max(0,Math.min(sFW(),fp.fx));
+  sPts[sDragging].fy=Math.max(0,Math.min(sFH(),fp.fy));
+  simRedraw();simCalcPath();
+}
+
+function simHitTest(cx,cy,rad=13){
+  for(let i=sPts.length-1;i>=0;i--){const cp=sFtToPx(sPts[i]);if(Math.hypot(cx-cp.x,cy-cp.y)<rad)return i;}
+  return -1;
+}
+
+window.simRedraw=function(){
+  if(!sCtx)return;
+  sCtx.clearRect(0,0,sCW(),sCH());
+  if(sImg){sCtx.drawImage(sImg,0,0,sCW(),sCH());}
+  else{
+    sCtx.fillStyle='#0d0f14';sCtx.fillRect(0,0,sCW(),sCH());
+    sCtx.strokeStyle='rgba(255,255,255,0.06)';sCtx.lineWidth=1;
+    const gx=sCW()/sFW(),gy=sCH()/sFH();
+    for(let x=0;x<=sFW();x++){sCtx.beginPath();sCtx.moveTo(x*gx,0);sCtx.lineTo(x*gx,sCH());sCtx.stroke();}
+    for(let y=0;y<=sFH();y++){sCtx.beginPath();sCtx.moveTo(0,y*gy);sCtx.lineTo(sCW(),y*gy);sCtx.stroke();}
+    sCtx.fillStyle='rgba(255,255,255,0.13)';sCtx.font='13px sans-serif';sCtx.textAlign='center';sCtx.textBaseline='middle';
+    sCtx.fillText('Upload a field image or click to place waypoints ('+sFW()+'ft x '+sFH()+'ft)',sCW()/2,sCH()/2);
+  }
+  const pathPts=sPath.map(id=>sPts.find(p=>p.id===id)).filter(Boolean);
+  if(pathPts.length>1){
+    sCtx.beginPath();sCtx.strokeStyle='rgba(255,220,80,0.75)';sCtx.lineWidth=2;sCtx.setLineDash([6,4]);
+    const c0=sFtToPx(pathPts[0]);sCtx.moveTo(c0.x,c0.y);
+    for(let i=1;i<pathPts.length;i++){const cp=sFtToPx(pathPts[i]);sCtx.lineTo(cp.x,cp.y);}
+    sCtx.stroke();sCtx.setLineDash([]);
+    for(let i=0;i<pathPts.length-1;i++){
+      const a=sFtToPx(pathPts[i]),b=sFtToPx(pathPts[i+1]);
+      const mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+      const ang=Math.atan2(b.y-a.y,b.x-a.x);
+      sCtx.save();sCtx.translate(mx,my);sCtx.rotate(ang);
+      sCtx.fillStyle='rgba(255,220,80,0.85)';
+      sCtx.beginPath();sCtx.moveTo(7,0);sCtx.lineTo(-5,-4);sCtx.lineTo(-5,4);sCtx.closePath();sCtx.fill();
+      sCtx.restore();
+    }
+  }
+  const stepCounts={};
+  sPath.forEach((id,si)=>{if(!stepCounts[id])stepCounts[id]=[];stepCounts[id].push(si+1);});
+  sPts.forEach((p,i)=>{
+    const cp=sFtToPx(p);const col=SIM_COLORS[p.type]||'#888';
+    const steps=stepCounts[p.id]||[];
+    sCtx.beginPath();sCtx.arc(cp.x,cp.y,10,0,Math.PI*2);
+    sCtx.fillStyle=steps.length>0?col:'rgba(13,15,20,0.85)';
+    sCtx.strokeStyle=col;sCtx.lineWidth=i===sSelIdx?3:2;
+    sCtx.fill();sCtx.stroke();
+    sCtx.fillStyle='#fff';sCtx.font='bold 9px sans-serif';sCtx.textAlign='center';sCtx.textBaseline='middle';
+    if(steps.length===1)sCtx.fillText(steps[0],cp.x,cp.y);
+    else if(steps.length>1)sCtx.fillText(steps.join(','),cp.x,cp.y);
+    else sCtx.fillText(p.name.replace('P',''),cp.x,cp.y);
+    const lbl=p.name+(p.type!=='transit'?' ['+SIM_LABELS[p.type]+']':'');
+    sCtx.font='10px sans-serif';sCtx.textAlign='left';sCtx.textBaseline='top';
+    const tw=sCtx.measureText(lbl).width;
+    sCtx.fillStyle='rgba(0,0,0,0.6)';sCtx.fillRect(cp.x+12,cp.y-6,tw+6,15);
+    sCtx.fillStyle='#fff';sCtx.fillText(lbl,cp.x+15,cp.y-5);
+    if(p.duration>0&&p.type!=='transit'){sCtx.fillStyle='rgba(245,166,35,0.9)';sCtx.font='9px sans-serif';sCtx.fillText(p.duration+'s',cp.x+12,cp.y+9);}
+  });
+};
+
+window.simUpdatePathSel=function(){
+  const sel=document.getElementById('sim-path-sel');if(!sel)return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="">— select waypoint —</option>';
+  sPts.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.name+' ('+SIM_LABELS[p.type]+')';sel.appendChild(o);});
+  if(cur)sel.value=cur;
+};
+
+window.simAddPathStep=function(){
+  const sel=document.getElementById('sim-path-sel');const id=parseInt(sel.value);if(!id)return;
+  sPath.push(id);simRenderPath();simRedraw();simCalcPath();
+};
+window.simUndoPath=function(){if(!sPath.length)return;sPath.pop();simRenderPath();simRedraw();simCalcPath();};
+window.simClearPath=function(){sPath=[];simRenderPath();simRedraw();simCalcPath();};
+window.simRemovePathStep=function(idx){sPath.splice(idx,1);simRenderPath();simRedraw();simCalcPath();};
+
+function simRenderPath(){
+  const c=document.getElementById('sim-path-steps');if(!c)return;c.innerHTML='';
+  if(!sPath.length){const ph=document.createElement('span');ph.style.cssText='font-size:12px;color:var(--muted);';ph.textContent='Path is empty — add steps below';c.appendChild(ph);return;}
+  sPath.forEach((id,si)=>{
+    const p=sPts.find(x=>x.id===id);if(!p)return;
+    const col=SIM_COLORS[p.type]||'#888';
+    const chip=document.createElement('span');chip.className='sim-chip';
+    chip.style.cssText='background:'+col+';color:#fff;';
+    chip.innerHTML='<span style="font-size:10px;opacity:0.7;">'+(si+1)+'.</span> '+p.name+'<span class="crm" onclick="simRemovePathStep('+si+')">x</span>';
+    c.appendChild(chip);
+    if(si<sPath.length-1){const arr=document.createElement('span');arr.style.cssText='font-size:12px;color:var(--dim);';arr.textContent=' > ';c.appendChild(arr);}
+  });
+}
+
+function simTrapTime(dist,vmax,accel){
+  if(dist<=0)return 0;
+  const tA=vmax/accel,dA=0.5*accel*tA*tA;
+  if(2*dA>=dist)return 2*Math.sqrt(dist/accel);
+  return 2*tA+(dist-2*dA)/vmax;
+}
+
+window.simCalcPath=function(){
+  const vmax=parseFloat(document.getElementById('sim-speed').value)||16;
+  const accel=parseFloat(document.getElementById('sim-accel').value)||12;
+  const pathPts=sPath.map(id=>sPts.find(p=>p.id===id)).filter(Boolean);
+  if(pathPts.length<2){
+    ['sim-r-total','sim-r-travel','sim-r-action'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='—';});
+    const sl=document.getElementById('sim-seg-list');if(sl)sl.innerHTML='<div style="font-size:12px;color:var(--muted);padding:3px;">Add 2+ path steps to see timing.</div>';
+    return;
+  }
+  let tT=0,aT=0;const segs=[];
+  for(let i=0;i<pathPts.length-1;i++){
+    const a=pathPts[i],b=pathPts[i+1];
+    const dist=Math.sqrt((b.fx-a.fx)**2+(b.fy-a.fy)**2);
+    const t=simTrapTime(dist,vmax,accel);
+    const act=a.type!=='transit'?a.duration:0;
+    tT+=t;aT+=act;segs.push({from:a.name,to:b.name,dist,travel:t,action:act,step:i+1});
+  }
+  const last=pathPts[pathPts.length-1];
+  if(last.type!=='transit')aT+=last.duration;
+  const setV=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  setV('sim-r-total',(tT+aT).toFixed(2));setV('sim-r-travel',tT.toFixed(2));setV('sim-r-action',aT.toFixed(2));
+  const sl=document.getElementById('sim-seg-list');if(!sl)return;sl.innerHTML='';
+  segs.forEach(s=>{
+    const row=document.createElement('div');row.className='sim-seg-row';
+    row.innerHTML='<span class="sim-seg-lbl">Step '+s.step+': '+s.from+' → '+s.to+' ('+s.dist.toFixed(1)+'ft)</span>'
+      +'<span class="sim-seg-val">'+s.travel.toFixed(2)+'s'+(s.action>0?' + '+s.action+'s':'')+'</span>';
+    sl.appendChild(row);
+  });
+  if(last.type!=='transit'&&last.duration>0){
+    const row=document.createElement('div');row.className='sim-seg-row';
+    row.innerHTML='<span class="sim-seg-lbl">Final: '+last.name+' ['+SIM_LABELS[last.type]+']</span><span class="sim-seg-val">'+last.duration+'s action</span>';
+    sl.appendChild(row);
+  }
+};
+
+function simRenderPtList(){
+  const list=document.getElementById('sim-pt-list');if(!list)return;list.innerHTML='';
+  if(!sPts.length){list.innerHTML='<div style="font-size:12px;color:var(--muted);">No waypoints yet. Click field to place.</div>';return;}
+  sPts.forEach((p,i)=>{
+    const row=document.createElement('div');row.className='sim-pt-row'+(i===sSelIdx?' sel':'');
+    const times=sPath.filter(id=>id===p.id).length;
+    row.innerHTML='<div class="sim-pt-dot" style="background:'+SIM_COLORS[p.type]+'"></div>'
+      +'<span style="flex:1;font-size:12px;">'+p.name+' <span style="color:var(--dim);">'+SIM_LABELS[p.type]+(p.duration>0?' ('+p.duration+'s)':'')+'</span></span>'
+      +(times>0?'<span style="font-size:10px;background:var(--bg2);padding:1px 5px;border-radius:3px;color:var(--muted);">'+times+'x</span>':'')
+      +'<button class="sim-del" onclick="simDeletePt('+i+',event)">x</button>';
+    row.onclick=()=>{sSelIdx=i;simShowEdit(i);simRenderPtList();simRedraw();};
+    list.appendChild(row);
+  });
+}
+
+window.simDeletePt=function(i,e){
+  e.stopPropagation();
+  const id=sPts[i].id;sPts.splice(i,1);sPath=sPath.filter(pid=>pid!==id);
+  if(sSelIdx===i)sSelIdx=-1;else if(sSelIdx>i)sSelIdx--;
+  document.getElementById('sim-edit-panel').style.display=sSelIdx>=0&&sSelIdx<sPts.length?'block':'none';
+  simRedraw();simCalcPath();simRenderPtList();simRenderPath();simUpdatePathSel();
+};
+
+function simShowEdit(i){
+  if(i<0||i>=sPts.length){document.getElementById('sim-edit-panel').style.display='none';return;}
+  const p=sPts[i];
+  document.getElementById('sim-edit-panel').style.display='block';
+  document.getElementById('sim-edit-title').textContent='Editing: '+p.name;
+  document.getElementById('sim-ep-name').value=p.name;
+  document.getElementById('sim-ep-type').value=p.type;
+  document.getElementById('sim-ep-dur').value=p.duration;
+  document.getElementById('sim-ep-desc').value=p.desc||'';
+  document.getElementById('sim-ep-dur-row').style.display=p.type!=='transit'?'flex':'none';
+}
+
+window.simUpdatePoint=function(key,val){
+  if(sSelIdx<0||sSelIdx>=sPts.length)return;
+  sPts[sSelIdx][key]=val;
+  if(key==='type')document.getElementById('sim-ep-dur-row').style.display=val!=='transit'?'flex':'none';
+  if(key==='name'){document.getElementById('sim-edit-title').textContent='Editing: '+val;simUpdatePathSel();}
+  simRedraw();simCalcPath();simRenderPtList();
+};
+
+window.simAskGuide=function(){
+  const game=document.getElementById('sim-game-sel').value;
+  const gn=game==='2026'?'FRC 2026 (current season)':game==='2025'?'FRC 2025 Reefscape':game==='2024'?'FRC 2024 Crescendo':'my custom FRC game';
+  alert('This will send a question to Claude in the chat below. Scroll down to see the answer!');
+  if(typeof sendPrompt==='function'){
+    sendPrompt('Give me step-by-step instructions for preparing the official top-down field image for '+gn+' to use in a CPM path planning simulator. The image must be cropped exactly to the field perimeter so the pixel dimensions define the coordinate space. Include: where to find the image, how to crop it precisely, which free tools to use on Windows and Mac, how to verify the 2:1 aspect ratio, and common mistakes to avoid.');
+  }
+};
+
+// Init simulator after DOM is ready
+if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',simInit);}
+else{setTimeout(simInit,100);}
+
+// Re-init when CPM tab is clicked since canvas may not exist yet
+const origShowTab=window.showTab;
+window.showTab=function(id,btn){
+  origShowTab(id,btn);
+  if(id==='cpm'&&!sCtx){setTimeout(simInit,50);}
+};
+})();
 </script>
 </body>
 </html>
