@@ -697,7 +697,7 @@ function defaultSection(sec){
       {phase:'Choose Concept',section:'Final Selection',items:[{t:'Choose concept, kitbot, or hybrid',d:false},{t:'Update EN with Robot Concept and requirements/constraints',d:false}]},
     ],notes:''},
     wg:{students:[],groups:[{name:'Drive Base',lead:'',cad:'',members:[]},{name:'Intake',lead:'',cad:'',members:[]},{name:'Scoring',lead:'',cad:'',members:[]},{name:'Climb',lead:'',cad:'',members:[]},{name:'Index',lead:'',cad:'',members:[]}],notes:''},
-    gr:{intake:[{loc:'',diff:'',val:''}],rp:[{task:'',pts:'',diff:''}],scoring:[{task:'',pts:'',diff:''}],pps:[{task:'',time:'',pps:''}],defense:[{task:'',diff:'',val:''}],penalty:[{task:'',pts:'',impact:''}],constraints:[{name:'Max Frame Size',val:'27.5 × 27.5" MAX'}],qa:[{q:'',a:''}],notes:''},
+    gr:{intake:[{loc:'',diff:'',val:''}],rp:[{task:'',loc:'',pts:'',diff:''}],scoring:[{task:'',loc:'',pts:'',diff:''}],pps:[{task:'',time:'',pps:''}],defense:[{task:'',loc:'',diff:'',val:''}],penalty:[{task:'',loc:'',pts:'',impact:''}],constraints:[{name:'Max Frame Size',val:'27.5 × 27.5" MAX'}],qa:[{q:'',a:''}],notes:''},
     cpm:{scenario:'Drive to pose Shooter (positions 4,5,6,7)',cycles:'10',points:'264',time:'69.6s',intake:'10 sec',recover:'0.081 sec',spinup:'0.9 sec',speed:'10 fps',window:'105 sec (omits 15s auton + 30s endgame)',analysis:'Shooters require time to spin up and recover between shots.',notes:''},
     strat:{summary:'',archetypes:[{name:'',pros:'',cpm:'',score:'~50'},{name:'',pros:'',cpm:'',score:'~80'},{name:'',pros:'',cpm:'',score:'~120'},{name:'',pros:'',cpm:'',score:'~200'}],swot:{s:'',w:'',o:'',t:''},eng:[{sub:'',cap:'',ben:'',diff:''}],prog:[{cap:'',ben:'',diff:'',val:''}],notes:''},
     specs:{caps:[{name:'<1 second intake time',desc:'',when:'Bravo'},{name:'Minimum 24 ball storage',desc:'',when:'Bravo'},{name:'Under 22"',desc:'',when:'Bravo'},{name:'Level 1',desc:'',when:'Bravo'},{name:'Level 3',desc:'',when:'Charlie'},{name:'Hooded Shooter',desc:'',when:'Bravo'},{name:'Turreted Shooter',desc:'',when:'Bravo'},{name:"Shooter range 2-20'",desc:'',when:'Bravo'}],quals:[{name:'Weight',target:'',notes:''},{name:'CG',target:'',notes:''},{name:'Drivebase dimensions',target:'27×27"',notes:''},{name:'Drive gear ratio',target:'',notes:''},{name:'Drivebase type',target:'',notes:''},{name:'Reliability',target:'',notes:''}],prog:[{task:'Turret coded and tested with close and long range tracking',when:'Bravo',notes:'Critical path: 100% Mobility'},{task:'Hood with distance tracking and variation',when:'Bravo',notes:'Critical path: Touch it Own'},{task:'Flywheels tuned with exact velocity',when:'Bravo',notes:'Critical path: 100 in 1 Scoring'},{task:'"Do we have a ball" reflective sensors',when:'Bravo',notes:''},{task:'Full field localization',when:'Bravo',notes:''}],notes:''},
@@ -901,12 +901,12 @@ function renderGR(){
     tbl.appendChild(tbody);card.appendChild(tbl);return card;
   }
   c.appendChild(grT('Intaking Locations',gr.intake,[{lbl:'Location',k:'loc',ph:'Location...'},{lbl:'Difficulty',k:'diff',opts:DIFF},{lbl:'Value',k:'val',opts:VAL}],v=>({loc:v,diff:'',val:''})));
-  c.appendChild(grT('Ranking Points',gr.rp,[{lbl:'Task',k:'task',ph:'Task...'},{lbl:'Points',k:'pts',ph:'Pts'},{lbl:'Difficulty',k:'diff',opts:DIFF}],v=>({task:v,pts:'',diff:''})));
-  c.appendChild(grT('Scoring',gr.scoring,[{lbl:'Task',k:'task',ph:'Task...'},{lbl:'Points',k:'pts',ph:'Pts'},{lbl:'Difficulty',k:'diff',opts:DIFF}],v=>({task:v,pts:'',diff:''})));
+  c.appendChild(grT('Ranking Points',gr.rp,[{lbl:'Task',k:'task',ph:'Task...'},{lbl:'Location',k:'loc',ph:'e.g. Wing, Stage...'},{lbl:'Points',k:'pts',ph:'Pts'},{lbl:'Difficulty',k:'diff',opts:DIFF}],v=>({task:v,loc:'',pts:'',diff:''})));
+  c.appendChild(grT('Scoring',gr.scoring,[{lbl:'Task',k:'task',ph:'Task...'},{lbl:'Location',k:'loc',ph:'e.g. Speaker, Amp...'},{lbl:'Points',k:'pts',ph:'Pts'},{lbl:'Difficulty',k:'diff',opts:DIFF}],v=>({task:v,loc:'',pts:'',diff:''})));
   c.appendChild(grT('Points Per Second',gr.pps,[{lbl:'Task',k:'task',ph:'Task...'},{lbl:'Time/Cycle',k:'time',ph:'sec'},{lbl:'Pts/Sec',k:'pps',ph:'pts/s'}],v=>({task:v,time:'',pps:''})));
   const g2=el('div','grid2');
-  g2.appendChild(grT('Defense Opportunities',gr.defense,[{lbl:'Task',k:'task',ph:'Task...'},{lbl:'Difficulty',k:'diff',opts:DIFF},{lbl:'Value',k:'val',opts:VAL}],v=>({task:v,diff:'',val:''})));
-  g2.appendChild(grT('Penalties',gr.penalty,[{lbl:'Task',k:'task',ph:'Task...'},{lbl:'Penalty Pts',k:'pts',ph:'Pts'},{lbl:'Impact',k:'impact',opts:DIFF}],v=>({task:v,pts:'',impact:''})));
+  g2.appendChild(grT('Defense Opportunities',gr.defense,[{lbl:'Task',k:'task',ph:'Task...'},{lbl:'Location',k:'loc',ph:'e.g. Wing, Mid...'},{lbl:'Difficulty',k:'diff',opts:DIFF},{lbl:'Value',k:'val',opts:VAL}],v=>({task:v,loc:'',diff:'',val:''})));
+  g2.appendChild(grT('Penalties',gr.penalty,[{lbl:'Task',k:'task',ph:'Task...'},{lbl:'Location',k:'loc',ph:'e.g. Opponent Zone...'},{lbl:'Penalty Pts',k:'pts',ph:'Pts'},{lbl:'Impact',k:'impact',opts:DIFF}],v=>({task:v,loc:'',pts:'',impact:''})));
   c.appendChild(g2);
   c.appendChild(grT('Design Constraints',gr.constraints,[{lbl:'Constraint',k:'name',ph:'Constraint...'},{lbl:'Value',k:'val',ph:'Value...'}],v=>({name:v,val:''})));
   c.appendChild(grT('Rules Q&A',gr.qa,[{lbl:'Question',k:'q',ph:'Question...'},{lbl:'Answer',k:'a',ph:'Answer...'}],v=>({q:v,a:''})));
@@ -1139,9 +1139,9 @@ function renderEval(){
   if(!ev.riskMatrix){
     ev.riskMatrix={
       rows:[
-        {label:'Small Consequence',cells:[{color:'green',conceptIdx:null},{color:'green',conceptIdx:null},{color:'green',conceptIdx:null}]},
-        {label:'Medium Consequence',cells:[{color:'green',conceptIdx:null},{color:'yellow',conceptIdx:null},{color:'yellow',conceptIdx:null}]},
-        {label:'High Consequence',cells:[{color:'green',conceptIdx:null},{color:'yellow',conceptIdx:null},{color:'red',conceptIdx:null}]},
+        {label:'Small Consequence',cells:[{color:'green',conceptIdxs:[]},{color:'green',conceptIdxs:[]},{color:'green',conceptIdxs:[]}]},
+        {label:'Medium Consequence',cells:[{color:'green',conceptIdxs:[]},{color:'yellow',conceptIdxs:[]},{color:'yellow',conceptIdxs:[]}]},
+        {label:'High Consequence',cells:[{color:'green',conceptIdxs:[]},{color:'yellow',conceptIdxs:[]},{color:'red',conceptIdxs:[]}]},
       ],
       riskLevels:['Low Risk','Medium Risk','High Risk']
     };
@@ -1151,14 +1151,12 @@ function renderEval(){
     while(row.cells.length<ev.riskMatrix.riskLevels.length){
       const ci=row.cells.length;
       const color=(defaultColors[ri]&&defaultColors[ri][ci])||'green';
-      row.cells.push({color,conceptIdx:null});
+      row.cells.push({color,conceptIdxs:[]});
     }
-    // Migrate old text cells to new conceptIdx format
-    row.cells.forEach(cell=>{if(cell.conceptIdx===undefined)cell.conceptIdx=null;});
   });
 
   const colorMap={green:'rgba(46,204,113,0.25)',yellow:'rgba(245,166,35,0.35)',red:'rgba(230,58,46,0.35)'};
-  const conceptOptions=[{label:'— none —',value:null},...ev.concepts.map((con,i)=>({label:con.name||'Concept '+(i+1),value:i}))];
+  const conceptOptions=ev.concepts.map((con,i)=>({label:con.name||'Concept '+(i+1),value:i}));
 
   const dmTbl=el('table','dtbl');dmTbl.style.cssText='table-layout:fixed;width:100%;';
   const dmHead=el('thead');const dmHtr=el('tr');
@@ -1180,27 +1178,40 @@ function renderEval(){
     tr.appendChild(tdLbl);
 
     row.cells.forEach((cell,ci)=>{
-      const td=el('td');td.style.cssText='background:'+colorMap[cell.color||'green']+';padding:8px;vertical-align:middle;';
+      // Migrate old single conceptIdx to array
+      if(!Array.isArray(cell.conceptIdxs)){
+        cell.conceptIdxs=cell.conceptIdx!=null?[cell.conceptIdx]:[];
+        delete cell.conceptIdx;
+      }
+      const td=el('td');td.style.cssText='background:'+colorMap[cell.color||'green']+';padding:8px;vertical-align:top;';
 
-      // Concept selector dropdown
-      const conSel=document.createElement('select');
-      conSel.style.cssText='width:100%;font-size:12px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);color:var(--text);border-radius:4px;padding:5px 7px;cursor:pointer;margin-bottom:6px;';
-      conSel.disabled=!canEdit;
-      conceptOptions.forEach(opt=>{
-        const o=document.createElement('option');
-        o.value=opt.value===null?'':opt.value;
-        o.textContent=opt.label;
-        if(cell.conceptIdx===opt.value)o.selected=true;
-        conSel.appendChild(o);
+      // Show selected concepts as tags
+      const tagsDiv=el('div');tagsDiv.style.cssText='display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;min-height:24px;';
+      cell.conceptIdxs.forEach((idx,ti)=>{
+        const con=ev.concepts[idx];if(!con)return;
+        const tag=el('span');tag.style.cssText='background:rgba(0,0,0,0.4);color:var(--text);border-radius:100px;padding:2px 8px;font-size:11px;display:inline-flex;align-items:center;gap:4px;';
+        tag.textContent=con.name||'Concept '+(idx+1);
+        if(canEdit){const rm=el('span');rm.textContent='×';rm.style.cssText='cursor:pointer;opacity:0.6;font-size:12px;';rm.onclick=()=>{cell.conceptIdxs.splice(ti,1);renderEval();changed('eval');};tag.appendChild(rm);}
+        tagsDiv.appendChild(tag);
       });
-      conSel.onchange=()=>{
-        cell.conceptIdx=conSel.value===''?null:parseInt(conSel.value);
-        changed('eval');
-      };
-      td.appendChild(conSel);
+      td.appendChild(tagsDiv);
 
-      // Color selector (admin only)
+      // Add concept dropdown
       if(canEdit){
+        const addSel=document.createElement('select');
+        addSel.style.cssText='width:100%;font-size:12px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);color:var(--text);border-radius:4px;padding:4px 7px;cursor:pointer;margin-bottom:5px;';
+        const defOpt=document.createElement('option');defOpt.value='';defOpt.textContent='+ Add concept...';addSel.appendChild(defOpt);
+        conceptOptions.forEach(opt=>{
+          if(cell.conceptIdxs.includes(opt.value))return; // already added
+          const o=document.createElement('option');o.value=opt.value;o.textContent=opt.label;addSel.appendChild(o);
+        });
+        addSel.onchange=()=>{
+          const v=parseInt(addSel.value);
+          if(!isNaN(v)&&!cell.conceptIdxs.includes(v)){cell.conceptIdxs.push(v);renderEval();changed('eval');}
+          addSel.value='';
+        };
+        td.appendChild(addSel);
+
         const colorSel=document.createElement('select');
         colorSel.style.cssText='width:100%;font-size:11px;background:rgba(0,0,0,0.35);border:none;color:var(--text);border-radius:3px;padding:2px;cursor:pointer;';
         [['green','🟢 Low risk'],['yellow','🟡 Med risk'],['red','🔴 High risk']].forEach(([v,lbl])=>{
@@ -1219,7 +1230,7 @@ function renderEval(){
     const addBtn=el('button');addBtn.style.cssText='width:100%;background:none;border:1px dashed var(--dim);border-radius:4px;color:var(--dim);font-size:12px;padding:6px;cursor:pointer;margin-top:4px;';
     addBtn.textContent='+ Add consequence row';
     addBtn.onclick=()=>{
-      const newCells=ev.riskMatrix.riskLevels.map(()=>({color:'green',conceptIdx:null}));
+      const newCells=ev.riskMatrix.riskLevels.map(()=>({color:'green',conceptIdxs:[]}));
       ev.riskMatrix.rows.push({label:'Consequence',cells:newCells});
       renderEval();changed('eval');
     };
