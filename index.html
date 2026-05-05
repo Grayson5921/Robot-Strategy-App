@@ -287,8 +287,7 @@ const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 const SUPER_ADMIN='ultima610@gmail.com';
 const sb=supabase.createClient(SB_URL,SB_KEY,{
   auth:{
-    flowType:'pkce',
-    redirectTo:'https://www.robot-strategy-app.com',
+    flowType:'implicit',
     detectSessionInUrl:true,
     persistSession:true,
     storageKey:'mrc-auth',
@@ -311,10 +310,7 @@ function showToast(msg,type='saved'){const t=document.getElementById('toast');t.
 async function signInGoogle(){
   const{error}=await sb.auth.signInWithOAuth({
     provider:'google',
-    options:{
-      redirectTo:'https://www.robot-strategy-app.com',
-      queryParams:{access_type:'offline',prompt:'consent'}
-    }
+    options:{redirectTo:'https://www.robot-strategy-app.com'}
   });
   if(error)alert('Sign in error: '+error.message);
 }
@@ -345,15 +341,15 @@ sb.auth.onAuthStateChange(async(ev,sess)=>{
   }
 });
 
-// Init — check for existing session immediately
-(async()=>{
+// For implicit flow, onAuthStateChange fires automatically when
+// the access_token hash is detected in the URL after redirect.
+// We only need getSession() for returning visits with stored sessions.
+setTimeout(async()=>{
   const{data:{session}}=await sb.auth.getSession();
-  if(session?.user){
-    await handleUser(session.user);
-  } else {
+  if(!session){
     document.getElementById('auth-screen').style.display='flex';
   }
-})();
+},100);
 
 async function checkAdmin(){
   isAdmin = user.email.toLowerCase()===SUPER_ADMIN;
