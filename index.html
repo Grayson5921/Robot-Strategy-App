@@ -412,13 +412,20 @@ async function createSheet(){
 
 async function openSheet(){
   if(!currentSheet)return;
-  document.getElementById('sheet-picker').style.display='none';
-  document.getElementById('app').style.display='block';
-  document.getElementById('sheet-pill').textContent=currentSheet.name;
-  await loadAllSections();
-  renderAll();
-  subscribeRealtime();
-  if(isAdmin)await renderAdmin();
+  try{
+    document.getElementById('sheet-picker').style.display='none';
+    document.getElementById('app').style.display='block';
+    document.getElementById('sheet-pill').textContent=currentSheet.name;
+    // Show readme immediately so screen isn't blank while loading
+    showTab('readme',document.querySelector('.tab-btn'));
+    await loadAllSections();
+    renderAll();
+    subscribeRealtime();
+    if(isAdmin)await renderAdmin();
+  }catch(err){
+    console.error('openSheet error:',err);
+    alert('Error loading sheet: '+err.message+'\nCheck console for details.');
+  }
 }
 
 function backToPicker(){
@@ -522,20 +529,31 @@ function showTab(id,btn){
 }
 
 // ── RENDER ALL ──
-function renderAll(){SECTIONS.forEach(sec=>renderSection(sec));}
+function renderAll(){
+  SECTIONS.forEach(sec=>{
+    try{ renderSection(sec); }
+    catch(err){ console.error('renderSection error for',sec,':',err); }
+  });
+}
 
 function renderSection(sec){
-  const nEl=document.getElementById('n-'+sec);
-  if(nEl&&D[sec]?.notes!==undefined)nEl.value=D[sec].notes||'';
-  switch(sec){
-    case 'plan': renderPlan(); break;
-    case 'wg': renderWG(); break;
-    case 'gr': renderGR(); break;
-    case 'cpm': renderCPM(); break;
-    case 'strat': renderStrat(); break;
-    case 'specs': renderSpecs(); break;
-    case 'proto': renderProto(); break;
-    case 'eval': renderEval(); break;
+  try{
+    const nEl=document.getElementById('n-'+sec);
+    if(nEl&&D[sec]?.notes!==undefined)nEl.value=D[sec].notes||'';
+    switch(sec){
+      case 'plan': renderPlan(); break;
+      case 'wg': renderWG(); break;
+      case 'gr': renderGR(); break;
+      case 'cpm': renderCPM(); break;
+      case 'strat': renderStrat(); break;
+      case 'specs': renderSpecs(); break;
+      case 'proto': renderProto(); break;
+      case 'eval': renderEval(); break;
+    }
+  }catch(err){
+    console.error('renderSection crash in',sec,':',err);
+    const body=document.getElementById(sec+'-body');
+    if(body)body.innerHTML=`<div style="color:var(--accent2);padding:1rem;font-family:'IBM Plex Mono',monospace;font-size:12px;">Error rendering ${sec}: ${err.message}</div>`;
   }
 }
 
