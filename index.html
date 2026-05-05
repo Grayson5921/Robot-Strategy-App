@@ -287,9 +287,11 @@ const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 const SUPER_ADMIN='ultima610@gmail.com';
 const sb=supabase.createClient(SB_URL,SB_KEY,{
   auth:{
+    flowType:'pkce',
     redirectTo:'https://www.robot-strategy-app.com',
     detectSessionInUrl:true,
     persistSession:true,
+    storageKey:'mrc-auth',
     storage:window.localStorage
   },
   realtime:{params:{eventsPerSecond:20}}
@@ -306,26 +308,52 @@ function txt(v,ph,cb){const t=el('textarea','ftxt');t.value=v||'';t.placeholder=
 function showToast(msg,type='saved'){const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type+' show';clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2200);}
 
 // ── AUTH ──
-async function signInGoogle(){await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin}});}
+async function signInGoogle(){
+  const{error}=await sb.auth.signInWithOAuth({
+    provider:'google',
+    options:{
+      redirectTo:'https://www.robot-strategy-app.com',
+      queryParams:{access_type:'offline',prompt:'consent'}
+    }
+  });
+  if(error)alert('Sign in error: '+error.message);
+}
 async function signOut(){if(realtimeSub)sb.removeChannel(realtimeSub);await sb.auth.signOut();location.reload();}
 
+async function handleUser(u){
+  if(!u)return;
+  user=u;
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('app').style.display='none';
+  document.getElementById('hdr-email').textContent=user.email;
+  document.querySelector('.picker-signout').textContent='Sign out ('+user.email+')';
+  await checkAdmin();
+  await loadSheets();
+  subscribeSheetsList();
+  document.getElementById('sheet-picker').style.display='flex';
+}
+
 sb.auth.onAuthStateChange(async(ev,sess)=>{
-  console.log('Auth event:', ev, sess?.user?.email);
-  if(sess?.user){
-    user=sess.user;
-    document.getElementById('auth-screen').style.display='none';
-    document.getElementById('app').style.display='none';
-    document.getElementById('sheet-picker').style.display='flex';
-    document.getElementById('hdr-email').textContent=user.email;
-    document.querySelector('.picker-signout').textContent='Sign out ('+user.email+')';
-    await checkAdmin();
-    await loadSheets();
-  } else {
+  console.log('Auth event:',ev,sess?.user?.email);
+  if((ev==='SIGNED_IN'||ev==='INITIAL_SESSION')&&sess?.user){
+    await handleUser(sess.user);
+  } else if(ev==='SIGNED_OUT'){
+    user=null;isAdmin=false;
     document.getElementById('auth-screen').style.display='flex';
     document.getElementById('sheet-picker').style.display='none';
     document.getElementById('app').style.display='none';
   }
 });
+
+// Init — check for existing session immediately
+(async()=>{
+  const{data:{session}}=await sb.auth.getSession();
+  if(session?.user){
+    await handleUser(session.user);
+  } else {
+    document.getElementById('auth-screen').style.display='flex';
+  }
+})();
 
 async function checkAdmin(){
   isAdmin = user.email.toLowerCase()===SUPER_ADMIN;
@@ -339,9 +367,21 @@ async function checkAdmin(){
   }
 }
 
+let sheetsRealtimeSub=null;
+
+function subscribeSheetsList(){
+  if(sheetsRealtimeSub)sb.removeChannel(sheetsRealtimeSub);
+  sheetsRealtimeSub=sb.channel('sheets-list')
+    .on('postgres_changes',{event:'*',schema:'public',table:'sheets'},async()=>{
+      await loadSheets();
+    })
+    .subscribe();
+}
+
 // ── SHEETS ──
 async function loadSheets(){
-  const{data}=await sb.from('sheets').select('*').order('created_at',{ascending:false});
+  const{data,error}=await sb.from('sheets').select('*').order('created_at',{ascending:false});
+  if(error){console.error('loadSheets error:',error);return;}
   sheets=data||[];
   renderSheetList();
 }
@@ -833,21 +873,7 @@ async function promoteUser(){
   renderAdmin();showToast('User promoted to admin','saved');
 }
 
-// Handle OAuth redirect — Supabase puts token in URL hash
-(async () => {
-  // If returning from Google OAuth, the hash contains the session
-  if (window.location.hash && window.location.hash.includes('access_token')) {
-    const { data, error } = await sb.auth.getSession();
-    if (data?.session) {
-      // Clean the URL without reloading
-      window.history.replaceState(null, '', window.location.pathname);
-    }
-  }
-})();
-
-window.addEventListener('error', e => {
-  console.error('App error:', e.message);
-});
+window.addEventListener('error',e=>console.error('App error:',e.message,e.filename,e.lineno));
 </script>
 </body>
 </html>
