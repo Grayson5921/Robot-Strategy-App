@@ -285,7 +285,15 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 const SB_URL='https://qsiozultzyirdvnqazcc.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFzaW96dWx0enlpcmR2bnFhemNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MDU4NDQsImV4cCI6MjA5MzQ4MTg0NH0.dsFX8pdYnEpNnxEHScU6SJREgS2QyCOhb3PRFGwK-Ao';
 const SUPER_ADMIN='ultima610@gmail.com';
-const sb=supabase.createClient(SB_URL,SB_KEY,{realtime:{params:{eventsPerSecond:20}}});
+const sb=supabase.createClient(SB_URL,SB_KEY,{
+  auth:{
+    redirectTo:'https://www.robot-strategy-app.com',
+    detectSessionInUrl:true,
+    persistSession:true,
+    storage:window.localStorage
+  },
+  realtime:{params:{eventsPerSecond:20}}
+});
 
 const DIFF=['','Low','Med','High'],VAL=['','Low','Med','High'],PRI=['','Must Do','Consider','Skip'],MS=['','Alpha','Bravo','Charlie','Delta'];
 let user=null,isAdmin=false,currentSheet=null,D={},saveTimers={},realtimeSub=null,sheets=[];
@@ -302,14 +310,16 @@ async function signInGoogle(){await sb.auth.signInWithOAuth({provider:'google',o
 async function signOut(){if(realtimeSub)sb.removeChannel(realtimeSub);await sb.auth.signOut();location.reload();}
 
 sb.auth.onAuthStateChange(async(ev,sess)=>{
+  console.log('Auth event:', ev, sess?.user?.email);
   if(sess?.user){
     user=sess.user;
     document.getElementById('auth-screen').style.display='none';
+    document.getElementById('app').style.display='none';
+    document.getElementById('sheet-picker').style.display='flex';
     document.getElementById('hdr-email').textContent=user.email;
     document.querySelector('.picker-signout').textContent='Sign out ('+user.email+')';
     await checkAdmin();
     await loadSheets();
-    document.getElementById('sheet-picker').style.display='flex';
   } else {
     document.getElementById('auth-screen').style.display='flex';
     document.getElementById('sheet-picker').style.display='none';
@@ -823,12 +833,20 @@ async function promoteUser(){
   renderAdmin();showToast('User promoted to admin','saved');
 }
 
-// Show auth screen immediately — onAuthStateChange will hide it if already logged in
-document.getElementById('auth-screen').style.display='flex';
+// Handle OAuth redirect — Supabase puts token in URL hash
+(async () => {
+  // If returning from Google OAuth, the hash contains the session
+  if (window.location.hash && window.location.hash.includes('access_token')) {
+    const { data, error } = await sb.auth.getSession();
+    if (data?.session) {
+      // Clean the URL without reloading
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }
+})();
 
 window.addEventListener('error', e => {
   console.error('App error:', e.message);
-  document.getElementById('auth-screen').style.display='flex';
 });
 </script>
 </body>
