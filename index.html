@@ -700,7 +700,7 @@ function defaultSection(sec){
     gr:{intake:[{loc:'',diff:'',val:''}],rp:[{task:'',loc:'',pts:'',diff:''}],scoring:[{task:'',loc:'',pts:'',diff:''}],pps:[{task:'',time:'',pps:''}],defense:[{task:'',loc:'',diff:'',val:''}],penalty:[{task:'',loc:'',pts:'',impact:''}],constraints:[{name:'Max Frame Size',val:'27.5 × 27.5" MAX'}],qa:[{q:'',a:''}],notes:''},
     cpm:{scenario:'Drive to pose Shooter (positions 4,5,6,7)',cycles:'10',points:'264',time:'69.6s',intake:'10 sec',recover:'0.081 sec',spinup:'0.9 sec',speed:'10 fps',window:'105 sec (omits 15s auton + 30s endgame)',analysis:'Shooters require time to spin up and recover between shots.',notes:''},
     strat:{summary:'',archetypes:[{name:'',pros:'',cpm:'',score:'~50'},{name:'',pros:'',cpm:'',score:'~80'},{name:'',pros:'',cpm:'',score:'~120'},{name:'',pros:'',cpm:'',score:'~200'}],swot:{s:'',w:'',o:'',t:''},eng:[{sub:'',cap:'',ben:'',diff:''}],prog:[{cap:'',ben:'',diff:'',val:''}],notes:''},
-    specs:{caps:[{name:'<1 second intake time',desc:'',when:'Bravo'},{name:'Minimum 24 ball storage',desc:'',when:'Bravo'},{name:'Under 22"',desc:'',when:'Bravo'},{name:'Level 1',desc:'',when:'Bravo'},{name:'Level 3',desc:'',when:'Charlie'},{name:'Hooded Shooter',desc:'',when:'Bravo'},{name:'Turreted Shooter',desc:'',when:'Bravo'},{name:"Shooter range 2-20'",desc:'',when:'Bravo'}],quals:[{name:'Weight',target:'',notes:''},{name:'CG',target:'',notes:''},{name:'Drivebase dimensions',target:'27×27"',notes:''},{name:'Drive gear ratio',target:'',notes:''},{name:'Drivebase type',target:'',notes:''},{name:'Reliability',target:'',notes:''}],prog:[{task:'Turret coded and tested with close and long range tracking',when:'Bravo',notes:'Critical path: 100% Mobility'},{task:'Hood with distance tracking and variation',when:'Bravo',notes:'Critical path: Touch it Own'},{task:'Flywheels tuned with exact velocity',when:'Bravo',notes:'Critical path: 100 in 1 Scoring'},{task:'"Do we have a ball" reflective sensors',when:'Bravo',notes:''},{task:'Full field localization',when:'Bravo',notes:''}],notes:''},
+    specs:{caps:[{name:'',desc:'',when:''},{name:'',desc:'',when:''},{name:'',desc:'',when:''}],quals:[{name:'Weight',target:'',notes:''},{name:'CG',target:'',notes:''},{name:'Drivebase dimensions',target:'',notes:''},{name:'Drive gear ratio',target:'',notes:''},{name:'Drivebase type',target:'',notes:''},{name:'Reliability',target:'',notes:''}],prog:[{task:'',when:'',notes:''},{task:'',when:'',notes:''},{task:'',when:'',notes:''}],notes:''},
     proto:{tasks:[{task:'Shooter compression, wheel compression, speed',lead:'Grayson',members:'',pri:'Must Do'},{task:'Intake wheel type, compression. Test star wheels and geko wheels.',lead:'Nick',members:'',pri:'Must Do'},{task:'Testing rubber coated belts for the transfer',lead:'Nisith',members:'',pri:'Must Do'}],notes:''},
     eval:{overview:[{c:'Archetype',base:'',c1:'',c2:'',c3:''},{c:'Anticipated CPM',base:'',c1:'',c2:'',c3:''},{c:'Proven CAD Geometry?',base:'',c1:'',c2:'',c3:''}],simplicity:[{m:'Number of Subsystems',base:'',c1:'',c2:'',c3:''},{m:'Scoring DOFs',base:'',c1:'',c2:'',c3:''},{m:'Number of Handoffs',base:'',c1:'',c2:'',c3:''},{m:'Custom Concepts',base:'',c1:'',c2:'',c3:''}],matrix:[{lbl:'Design Difficulty (×1)',desc:'Custom designs, tight fits, many subsystems add difficulty',base:3,c1:0,c2:0,c3:0},{lbl:'Build Difficulty (×1)',desc:"Look at old robots — if we haven't done it before",base:3,c1:0,c2:0,c3:0},{lbl:'Programming Difficulty (×1)',desc:'Many DOFs and subsystems add difficulty',base:2,c1:0,c2:0,c3:0},{lbl:'Risk Level (×1)',desc:"How far within or outside of team's capabilities",base:3,c1:0,c2:0,c3:0},{lbl:'Robot Capability (×1)',desc:'CPM Performance',base:3,c1:0,c2:0,c3:0}],notes:''},
   };
@@ -943,22 +943,6 @@ function renderCPM(){
   labelInp.value=setup.label||'';labelInp.placeholder='Setup '+(cpmActiveTab+1);labelInp.disabled=!canEdit;
   labelInp.oninput=()=>{setup.label=labelInp.value;const navBtns=nav.querySelectorAll('.tab-btn');if(navBtns[cpmActiveTab])navBtns[cpmActiveTab].querySelector('span').textContent=labelInp.value||('Setup '+(cpmActiveTab+1));changed('cpm');};
   labelRow.appendChild(labelLbl);labelRow.appendChild(labelInp);body.appendChild(labelRow);
-  const statsDiv=document.createElement('div');statsDiv.className='grid3';statsDiv.style.marginBottom='1rem';
-  [['cycles','Total Cycles'],['points','Total Points'],['time','Time Used']].forEach(([k,lbl])=>{
-    const d=el('div','cpm-stat');
-    const v=el('div','cpm-val');const i=inp(setup[k],'—',val=>{setup[k]=val;changed('cpm');},!canEdit);i.style.textAlign='center';v.appendChild(i);
-    const l=el('div','cpm-lbl');l.textContent=lbl;d.appendChild(v);d.appendChild(l);statsDiv.appendChild(d);
-  });
-  body.appendChild(statsDiv);
-  const aCard=el('div','card');const at=el('div','ctitle');at.textContent='Assumptions';aCard.appendChild(at);
-  const ag=el('div');ag.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;';
-  [['Scenario','scenario'],['Intake time','intake'],['Recover time','recover'],['Spin up time','spinup'],['Speed','speed'],['Cycle window','window']].forEach(([lbl,k])=>{
-    const d=el('div');const lb=el('div');lb.style.cssText='font-size:11px;color:var(--muted);font-family:"IBM Plex Mono",monospace;margin-bottom:3px;';lb.textContent=lbl;
-    d.appendChild(lb);d.appendChild(inp(setup[k],lbl,v=>{setup[k]=v;changed('cpm');},!canEdit));ag.appendChild(d);
-  });
-  aCard.appendChild(ag);body.appendChild(aCard);
-  const anCard=el('div','card');const ant=el('div','ctitle');ant.textContent='Analysis';anCard.appendChild(ant);
-  anCard.appendChild(txt(setup.analysis,'Enter CPM analysis for this setup...',v=>{setup.analysis=v;changed('cpm');},!canEdit));body.appendChild(anCard);
 }
 
 // ── STRATEGY ──
