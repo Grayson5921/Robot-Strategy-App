@@ -24,6 +24,8 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .sheet-name{flex:1;font-weight:500;font-size:14px;}
 .sheet-meta{font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace;}
 .lock-icon{font-size:13px;color:var(--gold);}
+.sheet-del{background:none;border:none;color:var(--dim);cursor:pointer;font-size:13px;padding:2px 6px;border-radius:3px;flex-shrink:0;}
+.sheet-del:hover{color:var(--accent2);background:rgba(230,58,46,0.1);}
 .no-sheets{color:var(--muted);font-size:13px;padding:1rem;text-align:center;}
 .picker-actions{display:flex;gap:8px;margin-bottom:0.75rem;}
 .pi{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:'Barlow',sans-serif;font-size:13px;padding:9px 12px;}
@@ -343,7 +345,10 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
   </div>
   <div id="tab-cpm" class="tab-content">
     <div class="view-banner" id="vb-cpm">🔒 View only — unlock to edit this sheet</div>
-    <div id="cpm-body"><div class="loading-msg">Loading...</div></div>
+    <div class="sec-hdr" style="margin-top:0.5rem;"><div class="sec-tag">CPM ANALYSIS</div><div><div class="sec-title">Cycles Per Match</div><div class="sec-desc">10 setup tabs — each models a different robot configuration or scenario.</div></div></div>
+    <div style="display:flex;gap:0;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--border);margin-bottom:1rem;" id="cpm-subtab-nav"></div>
+    <div id="cpm-subtab-body"></div>
+    <div id="cpm-body" style="display:none;"></div>
 
     <div class="sim-wrap">
       <div class="sim-title">Field Path Simulator</div>
@@ -534,6 +539,16 @@ function renderSheetList(){
     item.appendChild(name);
     if(sheet.is_protected){const lock=el('span','lock-icon');lock.textContent='🔒';item.appendChild(lock);}
     item.appendChild(meta);
+    const delBtn=el('button','sheet-del');delBtn.textContent='✕';delBtn.title='Delete sheet';
+    delBtn.onclick=async(e)=>{
+      e.stopPropagation();
+      if(!confirm('Delete "'+sheet.name+'"? This cannot be undone.'))return;
+      const{error}=await sb.from('sheets').delete().eq('id',sheet.id);
+      if(error){alert('Error deleting: '+error.message);return;}
+      if(currentSheet?.id===sheet.id){currentSheet=null;document.getElementById('open-btn').disabled=true;}
+      await loadSheets();
+    };
+    item.appendChild(delBtn);
     item.onclick=()=>{currentSheet=sheet;renderSheetList();document.getElementById('open-btn').disabled=false;};
     list.appendChild(item);
   });
@@ -898,8 +913,52 @@ function renderGR(){
 }
 
 // ── CPM ──
+// ── CPM SUBTABS ──
+let cpmActiveTab=0;
 function renderCPM(){
-  const c=document.getElementById('cpm-body');if(!c)return;c.innerHTML='';
+  const cpm=D.cpm;if(!cpm)return;
+  if(!cpm.setups){
+    cpm.setups=Array.from({length:10},(_,i)=>({
+      label:'Setup '+(i+1),scenario:'',cycles:'',points:'',time:'',intake:'',recover:'',spinup:'',speed:'',window:'',analysis:''
+    }));
+  }
+  const nav=document.getElementById('cpm-subtab-nav');
+  const body=document.getElementById('cpm-subtab-body');
+  if(!nav||!body)return;
+  nav.innerHTML='';
+  cpm.setups.forEach((setup,i)=>{
+    const btn=document.createElement('button');
+    btn.className='tab-btn'+(i===cpmActiveTab?' active':'');
+    btn.style.cssText='font-size:11px;padding:10px 13px;';
+    const nameEl=document.createElement('span');nameEl.textContent=setup.label||('Setup '+(i+1));
+    btn.appendChild(nameEl);
+    btn.onclick=()=>{cpmActiveTab=i;renderCPM();};
+    nav.appendChild(btn);
+  });
+  body.innerHTML='';
+  const setup=cpm.setups[cpmActiveTab];
+  const labelRow=document.createElement('div');labelRow.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:1rem;';
+  const labelLbl=document.createElement('span');labelLbl.style.cssText='font-size:12px;color:var(--muted);font-family:"IBM Plex Mono",monospace;';labelLbl.textContent='Tab name:';
+  const labelInp=document.createElement('input');labelInp.className='finp';labelInp.style.cssText='max-width:200px;';
+  labelInp.value=setup.label||'';labelInp.placeholder='Setup '+(cpmActiveTab+1);labelInp.disabled=!canEdit;
+  labelInp.oninput=()=>{setup.label=labelInp.value;const navBtns=nav.querySelectorAll('.tab-btn');if(navBtns[cpmActiveTab])navBtns[cpmActiveTab].querySelector('span').textContent=labelInp.value||('Setup '+(cpmActiveTab+1));changed('cpm');};
+  labelRow.appendChild(labelLbl);labelRow.appendChild(labelInp);body.appendChild(labelRow);
+  const statsDiv=document.createElement('div');statsDiv.className='grid3';statsDiv.style.marginBottom='1rem';
+  [['cycles','Total Cycles'],['points','Total Points'],['time','Time Used']].forEach(([k,lbl])=>{
+    const d=el('div','cpm-stat');
+    const v=el('div','cpm-val');const i=inp(setup[k],'—',val=>{setup[k]=val;changed('cpm');},!canEdit);i.style.textAlign='center';v.appendChild(i);
+    const l=el('div','cpm-lbl');l.textContent=lbl;d.appendChild(v);d.appendChild(l);statsDiv.appendChild(d);
+  });
+  body.appendChild(statsDiv);
+  const aCard=el('div','card');const at=el('div','ctitle');at.textContent='Assumptions';aCard.appendChild(at);
+  const ag=el('div');ag.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;';
+  [['Scenario','scenario'],['Intake time','intake'],['Recover time','recover'],['Spin up time','spinup'],['Speed','speed'],['Cycle window','window']].forEach(([lbl,k])=>{
+    const d=el('div');const lb=el('div');lb.style.cssText='font-size:11px;color:var(--muted);font-family:"IBM Plex Mono",monospace;margin-bottom:3px;';lb.textContent=lbl;
+    d.appendChild(lb);d.appendChild(inp(setup[k],lbl,v=>{setup[k]=v;changed('cpm');},!canEdit));ag.appendChild(d);
+  });
+  aCard.appendChild(ag);body.appendChild(aCard);
+  const anCard=el('div','card');const ant=el('div','ctitle');ant.textContent='Analysis';anCard.appendChild(ant);
+  anCard.appendChild(txt(setup.analysis,'Enter CPM analysis for this setup...',v=>{setup.analysis=v;changed('cpm');},!canEdit));body.appendChild(anCard);
 }
 
 // ── STRATEGY ──
@@ -1014,59 +1073,128 @@ function renderProto(){
 function renderEval(){
   const c=document.getElementById('eval-body');if(!c)return;c.innerHTML='';
   const ev=D.eval;if(!ev)return;
+  if(!ev.concepts)ev.concepts=[{name:'Concept 1',desc:'',photo:null}];
 
+  // CONCEPTS WITH PHOTOS
+  const conCard=el('div','card');
+  const conTitle=el('div','ctitle');conTitle.textContent='Design Concepts';conCard.appendChild(conTitle);
+  const conGrid=el('div');conGrid.style.cssText='display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;margin-bottom:0.75rem;';
+  ev.concepts.forEach((concept,ci)=>{
+    const cell=el('div');cell.style.cssText='background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;display:flex;flex-direction:column;gap:8px;';
+    const photoWrap=el('div');photoWrap.style.cssText='width:100%;aspect-ratio:4/3;background:var(--bg2);border:1px dashed var(--border2);border-radius:4px;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;position:relative;';
+    if(concept.photo){
+      const img=el('img');img.src=concept.photo;img.style.cssText='width:100%;height:100%;object-fit:cover;';photoWrap.appendChild(img);
+      if(canEdit){const rmPhoto=el('button');rmPhoto.textContent='x';rmPhoto.style.cssText='position:absolute;top:4px;right:4px;background:rgba(0,0,0,0.7);color:#fff;border:none;border-radius:3px;padding:2px 6px;cursor:pointer;font-size:11px;';rmPhoto.onclick=e2=>{e2.stopPropagation();concept.photo=null;renderEval();changed('eval');};photoWrap.appendChild(rmPhoto);}
+    } else {
+      const ph=el('div');ph.style.cssText='text-align:center;color:var(--dim);font-size:12px;padding:1rem;';ph.textContent=canEdit?'Click to upload photo':'No photo';photoWrap.appendChild(ph);
+    }
+    if(canEdit){
+      const fileInp=el('input');fileInp.type='file';fileInp.accept='image/*';fileInp.style.display='none';
+      fileInp.onchange=ev2=>{const f=ev2.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev3=>{concept.photo=ev3.target.result;renderEval();changed('eval');};r.readAsDataURL(f);};
+      photoWrap.appendChild(fileInp);
+      photoWrap.onclick=()=>{if(!concept.photo)fileInp.click();};
+    }
+    cell.appendChild(photoWrap);
+    const nameInp=inp(concept.name,'Concept name...',v=>{concept.name=v;changed('eval');},!canEdit);nameInp.style.fontWeight='600';cell.appendChild(nameInp);
+    const descTxt=txt(concept.desc,'Brief description...',v=>{concept.desc=v;changed('eval');},!canEdit);descTxt.style.minHeight='54px';cell.appendChild(descTxt);
+    if(canEdit&&ev.concepts.length>1){const delBtn=el('button');delBtn.textContent='Remove';delBtn.style.cssText='background:none;border:1px solid var(--border2);color:var(--muted);font-size:11px;padding:4px 8px;border-radius:4px;cursor:pointer;';delBtn.onclick=()=>{ev.concepts.splice(ci,1);renderEval();changed('eval');};cell.appendChild(delBtn);}
+    conGrid.appendChild(cell);
+  });
+  conCard.appendChild(conGrid);
+  if(canEdit){const addConBtn=el('button');addConBtn.style.cssText='background:none;border:1px dashed var(--dim);border-radius:4px;color:var(--dim);font-size:12px;font-family:"IBM Plex Mono",monospace;padding:8px;width:100%;text-align:center;cursor:pointer;margin-top:4px;';addConBtn.textContent='+ Add concept';addConBtn.onclick=()=>{ev.concepts.push({name:'Concept '+(ev.concepts.length+1),desc:'',photo:null});renderEval();changed('eval');};conCard.appendChild(addConBtn);}
+  c.appendChild(conCard);
+
+  // OVERVIEW + SIMPLICITY TABLES (dynamic columns)
+  const conceptNames=['Baseline',...ev.concepts.map(con=>con.name||'Concept')];
   function evT(title,rows,labelKey,labelHdr){
     const card=el('div','card');const ct=el('div','ctitle');ct.textContent=title;card.appendChild(ct);
-    const tbl=el('table','dtbl');tbl.innerHTML=`<thead><tr><th>${labelHdr}</th><th>Baseline</th><th>Concept 1</th><th>Concept 2</th><th>Concept 3</th></tr></thead>`;
+    const tbl=el('table','dtbl');
+    const thead=el('thead');const htr=el('tr');
+    htr.innerHTML='<th>'+labelHdr+'</th>'+conceptNames.map(n=>'<th>'+n+'</th>').join('')+(canEdit?'<th></th>':'');
+    thead.appendChild(htr);tbl.appendChild(thead);
     const tbody=el('tbody');
     rows.forEach((row,ri)=>{
       const tr=el('tr');
       const td0=el('td');td0.appendChild(inp(row[labelKey],'...',v=>{row[labelKey]=v;changed('eval');},!canEdit));tr.appendChild(td0);
-      ['base','c1','c2','c3'].forEach(k=>{const td=el('td');td.appendChild(inp(row[k],'—',v=>{row[k]=v;changed('eval');},!canEdit));tr.appendChild(td);});
+      const keys=['base',...ev.concepts.map((_,i)=>'c'+i)];
+      keys.forEach(k=>{if(row[k]===undefined)row[k]='';const td=el('td');td.appendChild(inp(row[k],'—',v=>{row[k]=v;changed('eval');},!canEdit));tr.appendChild(td);});
+      if(canEdit){const tdD=el('td');const db=el('button','del-btn');db.textContent='x';db.onclick=()=>{rows.splice(ri,1);renderEval();changed('eval');};tdD.appendChild(db);tr.appendChild(tdD);}
       tbody.appendChild(tr);
     });
-    if(canEdit){
-      const addTr=el('tr');const addTd=el('td');addTd.colSpan=5;
-      const addI=el('input','finp');addI.placeholder='+ Add row (press Enter)...';addI.style.fontSize='12px';
-      addI.onkeydown=e=>{if(e.key==='Enter'&&addI.value.trim()){const r={base:'',c1:'',c2:'',c3:''};r[labelKey]=addI.value.trim();rows.push(r);addI.value='';renderEval();changed('eval');}};
-      addTd.appendChild(addI);addTr.appendChild(addTd);tbody.appendChild(addTr);
-    }
+    if(canEdit){const addTr=el('tr');const addTd=el('td');addTd.colSpan=conceptNames.length+2;const addI=el('input','finp');addI.placeholder='+ Add row (press Enter)...';addI.style.fontSize='12px';addI.onkeydown=e=>{if(e.key==='Enter'&&addI.value.trim()){const r={base:''};ev.concepts.forEach((_,i)=>{r['c'+i]='';});r[labelKey]=addI.value.trim();rows.push(r);addI.value='';renderEval();changed('eval');}};addTd.appendChild(addI);addTr.appendChild(addTd);tbody.appendChild(addTr);}
     tbl.appendChild(tbody);card.appendChild(tbl);return card;
   }
   c.appendChild(evT('Concept Overview',ev.overview,'c','Criteria'));
   c.appendChild(evT('Simplicity Level',ev.simplicity,'m','Metric'));
 
+  // DESIGN RISK MATRIX
+  const dmCard=el('div','card');dmCard.style.cssText='border-color:rgba(230,58,46,0.2);';
+  const dmTitle=el('div','ctitle');dmTitle.textContent='Design Risk Matrix';dmCard.appendChild(dmTitle);
+  const dmDesc=el('p');dmDesc.style.cssText='font-size:12px;color:var(--muted);margin-bottom:1rem;';dmDesc.textContent='Each cell represents a combination of consequence and risk level. Click a cell to edit the scenario and set its color.';dmCard.appendChild(dmDesc);
+  if(!ev.riskMatrix){ev.riskMatrix={rows:[{label:'Small Consequence',cells:[]},{label:'Medium Consequence',cells:[]},{label:'High Consequence',cells:[]}],riskLevels:['Low Risk','Medium Risk','High Risk']};}
+  ev.riskMatrix.rows.forEach(row=>{while(row.cells.length<ev.riskMatrix.riskLevels.length)row.cells.push({color:'green',text:''});});
+  const dmTbl=el('table','dtbl');dmTbl.style.cssText='table-layout:fixed;width:100%;';
+  const dmHead=el('thead');const dmHtr=el('tr');
+  const th0=el('th');th0.style.width='130px';th0.innerHTML='<span style="font-size:11px;color:var(--muted);">Consequence / Risk</span>';dmHtr.appendChild(th0);
+  ev.riskMatrix.riskLevels.forEach((rl,ri)=>{const th=el('th');if(canEdit){const i=inp(rl,'Risk level...',v=>{ev.riskMatrix.riskLevels[ri]=v;changed('eval');});th.appendChild(i);}else th.textContent=rl;dmHtr.appendChild(th);});
+  dmHead.appendChild(dmHtr);dmTbl.appendChild(dmHead);
+  const dmBody=el('tbody');
+  ev.riskMatrix.rows.forEach((row,ri)=>{
+    const tr=el('tr');
+    const tdLbl=el('td');tdLbl.style.cssText='font-size:12px;font-weight:500;padding:8px;background:var(--bg3);';
+    if(canEdit){const i=inp(row.label,'Consequence...',v=>{row.label=v;changed('eval');});tdLbl.appendChild(i);}else tdLbl.textContent=row.label;
+    tr.appendChild(tdLbl);
+    const colorMap={green:'rgba(46,204,113,0.25)',yellow:'rgba(245,166,35,0.35)',red:'rgba(230,58,46,0.35)'};
+    row.cells.forEach((cell,ci)=>{
+      const td=el('td');td.style.cssText='background:'+colorMap[cell.color||'green']+';padding:6px 8px;vertical-align:top;';
+      if(canEdit){
+        const cellTxt=txt(cell.text,'Describe scenario...',v=>{cell.text=v;changed('eval');});cellTxt.style.cssText='min-height:56px;background:transparent;border:none;font-size:12px;resize:vertical;';cellTxt.onfocus=()=>{cellTxt.style.background='rgba(0,0,0,0.2)';};cellTxt.onblur=()=>{cellTxt.style.background='transparent';};td.appendChild(cellTxt);
+        const colorSel=document.createElement('select');colorSel.style.cssText='width:100%;font-size:11px;margin-top:4px;background:rgba(0,0,0,0.35);border:none;color:var(--text);border-radius:3px;padding:2px;cursor:pointer;';
+        [['green','Low risk'],['yellow','Med risk'],['red','High risk']].forEach(([v,lbl])=>{const o=document.createElement('option');o.value=v;o.textContent=lbl;if(v===cell.color)o.selected=true;colorSel.appendChild(o);});
+        colorSel.onchange=()=>{cell.color=colorSel.value;td.style.background=colorMap[cell.color];changed('eval');};td.appendChild(colorSel);
+      } else {const p=document.createElement('p');p.style.cssText='font-size:12px;color:var(--text);white-space:pre-wrap;';p.textContent=cell.text;td.appendChild(p);}
+      tr.appendChild(td);
+    });
+    dmBody.appendChild(tr);
+  });
+  if(canEdit){const addTr=el('tr');const addTd=el('td');addTd.colSpan=ev.riskMatrix.riskLevels.length+1;const addBtn=el('button');addBtn.style.cssText='width:100%;background:none;border:1px dashed var(--dim);border-radius:4px;color:var(--dim);font-size:12px;padding:6px;cursor:pointer;margin-top:4px;';addBtn.textContent='+ Add consequence row';addBtn.onclick=()=>{ev.riskMatrix.rows.push({label:'Consequence',cells:Array.from({length:ev.riskMatrix.riskLevels.length},()=>({color:'green',text:''}))});renderEval();changed('eval');};addTd.appendChild(addBtn);addTr.appendChild(addTd);dmBody.appendChild(addTr);}
+  dmTbl.appendChild(dmBody);dmCard.appendChild(dmTbl);c.appendChild(dmCard);
+
+  // WEIGHTED MATRIX (dynamic columns)
   const mCard=el('div','card');mCard.style.cssText='border-color:rgba(245,166,35,0.3);background:rgba(245,166,35,0.04);';
-  const mTitle=el('div','ctitle');mTitle.textContent='Weighted Matrix';mCard.appendChild(mTitle);
-  const mDesc=el('p');mDesc.style.cssText='font-size:12px;color:var(--muted);margin-bottom:1rem;';mDesc.textContent='Assign value 1–5. Higher is better. Totals auto-calculate.';mCard.appendChild(mDesc);
+  const mTitle=el('div','ctitle');mTitle.textContent='Weighted Decision Matrix';mCard.appendChild(mTitle);
+  const mDesc2=el('p');mDesc2.style.cssText='font-size:12px;color:var(--muted);margin-bottom:1rem;';mDesc2.textContent='Assign value 1-5 for each concept. Higher is better. Totals auto-calculate.';mCard.appendChild(mDesc2);
   (ev.matrix||[]).forEach((row,ri)=>{
     const mRow=el('div','mx-row');
     const mLbl=el('div','mx-label');mLbl.appendChild(inp(row.lbl,'Criterion...',v=>{row.lbl=v;changed('eval');},!canEdit));mRow.appendChild(mLbl);
     const mScores=el('div','mx-scores');
-    ['base','c1','c2','c3'].forEach((k,ki)=>{
-      const box=el('div','mx-box');const lbl=el('label');lbl.textContent=['Base','C1','C2','C3'][ki];
+    const allKeys=['base',...ev.concepts.map((_,i)=>'c'+i)];
+    const allLabels=['Base',...ev.concepts.map(con=>(con.name||'C').substring(0,4))];
+    allKeys.forEach((k,ki)=>{
+      if(row[k]===undefined)row[k]=0;
+      const box=el('div','mx-box');const lbl=el('label');lbl.textContent=allLabels[ki];
       const i=el('input');i.type='number';i.min=0;i.max=5;i.className='mx-inp'+(ki>0?' c':'');i.value=row[k]||0;i.disabled=!canEdit;
       i.oninput=()=>{if(!canEdit)return;row[k]=parseInt(i.value)||0;updateTotals();changed('eval');};
       box.appendChild(lbl);box.appendChild(i);mScores.appendChild(box);
     });
     mRow.appendChild(mScores);
     const mD=el('div','mx-desc');mD.appendChild(inp(row.desc,'Description...',v=>{row.desc=v;changed('eval');},!canEdit));mRow.appendChild(mD);
+    if(canEdit){const db=el('button','del-btn');db.textContent='x';db.onclick=()=>{ev.matrix.splice(ri,1);renderEval();changed('eval');};mRow.appendChild(db);}
     mCard.appendChild(mRow);
   });
+  if(canEdit){const addRow=el('div');addRow.style.cssText='margin-top:8px;';const addI=el('input','finp');addI.placeholder='+ Add criterion (press Enter)...';addI.style.fontSize='12px';addI.onkeydown=e=>{if(e.key==='Enter'&&addI.value.trim()){const r={lbl:addI.value.trim(),desc:'',base:0};ev.concepts.forEach((_,i)=>{r['c'+i]=0;});ev.matrix.push(r);addI.value='';renderEval();changed('eval');}};addRow.appendChild(addI);mCard.appendChild(addRow);}
   const tots=el('div','mx-totals');tots.id='mx-totals';
-  ['Base','C1','C2','C3'].forEach((lbl,i)=>{
-    const col=el('div','tot-col');col.innerHTML=`<div class="tot-lbl">${lbl}</div><div class="tot-val${i>0?' c':''}" id="tot-${['base','c1','c2','c3'][i]}">0</div>`;tots.appendChild(col);
-  });
+  const totKeys=['base',...ev.concepts.map((_,i)=>'c'+i)];
+  const totLabels=['Base',...ev.concepts.map(con=>(con.name||'C').substring(0,8))];
+  totKeys.forEach((k,i)=>{const col=el('div','tot-col');col.innerHTML='<div class="tot-lbl">'+totLabels[i]+'</div><div class="tot-val'+(i>0?' c':'')+'" id="tot-'+k+'">0</div>';tots.appendChild(col);});
   mCard.appendChild(tots);c.appendChild(mCard);
   updateTotals();
 }
 
 function updateTotals(){
-  if(!D.eval?.matrix)return;
-  ['base','c1','c2','c3'].forEach(k=>{
-    const s=(D.eval.matrix||[]).reduce((a,r)=>a+(parseInt(r[k])||0),0);
-    const e=document.getElementById('tot-'+k);if(e)e.textContent=s;
-  });
+  if(!D.eval?.matrix||!D.eval?.concepts)return;
+  const keys=['base',...D.eval.concepts.map((_,i)=>'c'+i)];
+  keys.forEach(k=>{const s=(D.eval.matrix||[]).reduce((a,r)=>a+(parseInt(r[k])||0),0);const e=document.getElementById('tot-'+k);if(e)e.textContent=s;});
 }
 
 // ── INIT ──
