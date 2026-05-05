@@ -196,14 +196,24 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 <body>
 
 <!-- AUTH -->
-<div id="auth-screen">
+<div id="auth-screen" style="display:flex;align-items:center;justify-content:center;min-height:100vh;">
   <div class="auth-card">
     <div class="auth-logo"><span>6369</span>MERCENARY ROBOTICS</div>
     <div class="auth-sub">Robot Strategy Worksheet · 2026</div>
-    <button class="g-btn" onclick="signInGoogle()">
-      <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-      Sign in with Google
-    </button>
+    <div id="auth-form">
+      <div style="font-size:12px;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-bottom:8px;text-align:left;">EMAIL</div>
+      <input id="auth-email" type="email" placeholder="your@email.com" style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;padding:10px 12px;margin-bottom:10px;" onkeydown="if(event.key==='Enter')sendMagicLink()">
+      <button class="g-btn" onclick="sendMagicLink()" style="background:var(--accent);color:#fff;justify-content:center;">
+        Send Magic Link
+      </button>
+      <div class="auth-note" style="margin-top:0.75rem;">We'll email you a sign-in link — no password needed</div>
+    </div>
+    <div id="auth-sent" style="display:none;">
+      <div style="font-size:32px;margin-bottom:0.75rem;">📬</div>
+      <div style="font-weight:600;margin-bottom:0.5rem;">Check your email!</div>
+      <div style="font-size:13px;color:var(--muted);">We sent a magic link to <span id="auth-sent-email" style="color:var(--text);"></span>.<br>Click it to sign in.</div>
+      <div style="margin-top:1rem;font-size:12px;color:var(--dim);cursor:pointer;" onclick="document.getElementById('auth-sent').style.display='none';document.getElementById('auth-form').style.display='block';">← Try a different email</div>
+    </div>
   </div>
 </div>
 
@@ -287,7 +297,6 @@ const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 const SUPER_ADMIN='ultima610@gmail.com';
 const sb=supabase.createClient(SB_URL,SB_KEY,{
   auth:{
-    flowType:'implicit',
     detectSessionInUrl:true,
     persistSession:true,
     storageKey:'mrc-auth',
@@ -307,14 +316,24 @@ function txt(v,ph,cb){const t=el('textarea','ftxt');t.value=v||'';t.placeholder=
 function showToast(msg,type='saved'){const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type+' show';clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2200);}
 
 // ── AUTH ──
-async function signInGoogle(){
-  const{error}=await sb.auth.signInWithOAuth({
-    provider:'google',
-    options:{redirectTo:'https://www.robot-strategy-app.com'}
+async function sendMagicLink(){
+  const email=document.getElementById('auth-email').value.trim();
+  if(!email){alert('Please enter your email.');return;}
+  const{error}=await sb.auth.signInWithOtp({
+    email,
+    options:{emailRedirectTo:'https://www.robot-strategy-app.com'}
   });
-  if(error)alert('Sign in error: '+error.message);
+  if(error){alert('Error: '+error.message);return;}
+  document.getElementById('auth-sent-email').textContent=email;
+  document.getElementById('auth-form').style.display='none';
+  document.getElementById('auth-sent').style.display='block';
 }
-async function signOut(){if(realtimeSub)sb.removeChannel(realtimeSub);await sb.auth.signOut();location.reload();}
+async function signOut(){
+  if(realtimeSub)sb.removeChannel(realtimeSub);
+  if(sheetsRealtimeSub)sb.removeChannel(sheetsRealtimeSub);
+  await sb.auth.signOut();
+  location.reload();
+}
 
 async function handleUser(u){
   if(!u)return;
@@ -341,15 +360,14 @@ sb.auth.onAuthStateChange(async(ev,sess)=>{
   }
 });
 
-// For implicit flow, onAuthStateChange fires automatically when
-// the access_token hash is detected in the URL after redirect.
-// We only need getSession() for returning visits with stored sessions.
+// Check for existing session on load
+// onAuthStateChange fires automatically if token is in URL hash (magic link return)
 setTimeout(async()=>{
   const{data:{session}}=await sb.auth.getSession();
-  if(!session){
+  if(!session&&!window.location.hash.includes('access_token')){
     document.getElementById('auth-screen').style.display='flex';
   }
-},100);
+},200);
 
 async function checkAdmin(){
   isAdmin = user.email.toLowerCase()===SUPER_ADMIN;
@@ -520,8 +538,13 @@ function changed(sec){scheduleSave(sec);}
 function showTab(id,btn){
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('tab-'+id).classList.add('active');
+  const tab=document.getElementById('tab-'+id);
+  if(tab)tab.classList.add('active');
   if(btn)btn.classList.add('active');
+  // Re-render section on tab switch to ensure it's populated
+  if(D&&Object.keys(D).length>0&&id!=='readme'&&id!=='admin'){
+    try{ renderSection(id); }catch(e){ console.error('Tab render error:',e); }
+  }
 }
 
 // ── RENDER ALL ──
@@ -555,7 +578,7 @@ function renderSection(sec){
 
 // ── PLAN ──
 function renderPlan(){
-  const c=document.getElementById('plan-body');c.innerHTML='';
+  const c=document.getElementById('plan-body');if(!c)return;c.innerHTML='';
   const p=D.plan;if(!p?.tasks)return;
   let lastPhase='';
   p.tasks.forEach((g,gi)=>{
@@ -587,7 +610,7 @@ function renderPlan(){
 
 // ── WORK GROUPS ──
 function renderWG(){
-  const c=document.getElementById('wg-body');c.innerHTML='';
+  const c=document.getElementById('wg-body');if(!c)return;c.innerHTML='';
   const wg=D.wg;if(!wg)return;
   const rCard=el('div','card');
   const rT=el('div','ctitle');rT.textContent='Student Roster';rCard.appendChild(rT);
@@ -643,7 +666,7 @@ function rmMember(gi,mi){D.wg.groups[gi].members.splice(mi,1);renderWG();changed
 
 // ── GAME RULES ──
 function renderGR(){
-  const c=document.getElementById('gr-body');c.innerHTML='';
+  const c=document.getElementById('gr-body');if(!c)return;c.innerHTML='';
   const gr=D.gr;if(!gr)return;
   function grT(title,rows,cols,newRow){
     const card=el('div','card');const ct=el('div','ctitle');ct.textContent=title;card.appendChild(ct);
@@ -682,7 +705,7 @@ function renderGR(){
 
 // ── CPM ──
 function renderCPM(){
-  const c=document.getElementById('cpm-body');c.innerHTML='';
+  const c=document.getElementById('cpm-body');if(!c)return;c.innerHTML='';
   const cpm=D.cpm;if(!cpm)return;
   const stats=el('div','grid3');stats.style.marginBottom='1rem';
   [['cycles','Total Cycles'],['points','Total Points'],['time','Time Used']].forEach(([k,lbl])=>{
@@ -704,7 +727,7 @@ function renderCPM(){
 
 // ── STRATEGY ──
 function renderStrat(){
-  const c=document.getElementById('strat-body');c.innerHTML='';
+  const c=document.getElementById('strat-body');if(!c)return;c.innerHTML='';
   const st=D.strat;if(!st)return;
   const sCard=el('div','card');sCard.style.borderLeft='3px solid var(--accent)';
   const st2=el('div','ctitle');st2.textContent='Strategy Summary';sCard.appendChild(st2);
@@ -754,7 +777,7 @@ function renderStrat(){
 
 // ── SPECS ──
 function renderSpecs(){
-  const c=document.getElementById('specs-body');c.innerHTML='';
+  const c=document.getElementById('specs-body');if(!c)return;c.innerHTML='';
   const sp=D.specs;if(!sp)return;
   function spT(title,rows,cols,newRow){
     const card=el('div','card');const ct=el('div','ctitle');ct.textContent=title;card.appendChild(ct);
@@ -778,7 +801,7 @@ function renderSpecs(){
 
 // ── PROTOTYPE ──
 function renderProto(){
-  const c=document.getElementById('proto-body');c.innerHTML='';
+  const c=document.getElementById('proto-body');if(!c)return;c.innerHTML='';
   const pt=D.proto;if(!pt)return;
   const ib=el('div','info-box');ib.textContent='Be specific and detailed. State if CAD is required. Each task must be replicated in the EN with the end result.';c.appendChild(ib);
   const card=el('div','card');const ct=el('div','ctitle');ct.textContent='Tasks';card.appendChild(ct);
@@ -803,7 +826,7 @@ function renderProto(){
 
 // ── EVAL ──
 function renderEval(){
-  const c=document.getElementById('eval-body');c.innerHTML='';
+  const c=document.getElementById('eval-body');if(!c)return;c.innerHTML='';
   const ev=D.eval;if(!ev)return;
 
   function evT(title,rows,labelKey,labelHdr){
