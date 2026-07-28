@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>6369 | Robot Strategy 2026</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0d0f14;--bg2:#13161e;--bg3:#1a1e28;--border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);--accent:#e63a2e;--accent2:#ff6b5b;--gold:#f5a623;--text:#e8eaf0;--muted:#7a8099;--dim:#4a5068;--green:#2ecc71;--blue:#3a8ef5;--radius:6px;}
@@ -112,17 +112,17 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .fsel:focus{outline:none;border-color:var(--accent);}
 .fsel option{background:var(--bg2);}
 .fsel:disabled{opacity:0.5;cursor:not-allowed;}
-.finp{background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:'Barlow',sans-serif;font-size:13px;padding:5px 8px;width:100%;}
+.finp{background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:'Barlow',sans-serif;font-size:13px;padding:5px 8px;width:100%;min-width:0;box-sizing:border-box;}
 .finp:focus{outline:none;border-color:var(--accent);}
 .finp:disabled,.finp[readonly]{opacity:0.5;cursor:not-allowed;}
-.ftxt{background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:'Barlow',sans-serif;font-size:13px;padding:5px 8px;width:100%;resize:vertical;min-height:54px;line-height:1.5;}
+.ftxt{background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:'Barlow',sans-serif;font-size:13px;padding:5px 8px;width:100%;resize:vertical;min-height:54px;line-height:1.5;overflow-x:hidden;word-wrap:break-word;white-space:pre-wrap;box-sizing:border-box;}
 .ftxt:focus{outline:none;border-color:var(--accent);}
 .ftxt:disabled{opacity:0.5;cursor:not-allowed;}
 
 /* NOTES */
 .notes-sec{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem 1.5rem;margin-top:1.5rem;}
 .notes-ttl{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem;}
-.notes-area{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:'Barlow',sans-serif;font-size:13px;padding:10px 12px;resize:vertical;min-height:70px;line-height:1.6;}
+.notes-area{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:'Barlow',sans-serif;font-size:13px;padding:10px 12px;resize:vertical;min-height:70px;line-height:1.6;overflow-x:hidden;word-wrap:break-word;white-space:pre-wrap;box-sizing:border-box;}
 .notes-area:focus{outline:none;border-color:var(--accent);}
 .notes-area:disabled{opacity:0.5;}
 
@@ -246,30 +246,62 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .toast.live{background:rgba(58,142,245,0.9);color:#fff;}
 .toast.show{opacity:1;}
 .loading-msg{display:flex;align-items:center;justify-content:center;height:150px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:13px;}
+#login-screen .picker-card{text-align:center;}
+#login-screen .picker-logo{justify-content:center;margin-bottom:0.5rem;}
+#login-screen .picker-sub{margin-bottom:1.5rem;}
 </style>
 </head>
 <body>
 
+<!-- LOGIN -->
+<div id="login-screen" style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:2rem;">
+  <div class="picker-card" style="max-width:380px;">
+    <div class="picker-logo"><span>6369</span>MERCENARY ROBOTICS</div>
+    <div class="picker-sub">Robot Strategy Worksheet · 2026</div>
+    <div style="display:flex;gap:8px;margin-bottom:1.5rem;">
+      <button class="pb" id="login-guest-btn" onclick="loginGuest()" style="flex:1;">View as Guest</button>
+      <button class="pb sec" id="login-admin-btn" onclick="showAdminLogin()" style="flex:1;">Admin Login</button>
+    </div>
+    <div id="admin-login-form" style="display:none;">
+      <div style="font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-bottom:6px;">ADMIN PASSWORD</div>
+      <div style="display:flex;gap:8px;">
+        <input class="pi" id="admin-pw-inp" type="password" placeholder="Enter admin password..." style="flex:1;" onkeydown="if(event.key==='Enter')submitAdminLogin()">
+        <button class="pb" onclick="submitAdminLogin()">Enter</button>
+      </div>
+      <div id="admin-login-err" style="display:none;font-size:12px;color:var(--accent2);margin-top:6px;font-family:'IBM Plex Mono',monospace;">Incorrect password.</div>
+    </div>
+  </div>
+</div>
+
 <!-- SHEET PICKER -->
-<div id="picker">
+<div id="picker" style="display:none;">
   <div class="picker-card">
     <div class="picker-logo"><span>6369</span>MERCENARY ROBOTICS</div>
-    <div class="picker-sub">Robot Strategy Worksheet · 2026 — No login required</div>
+    <div id="picker-sub" class="picker-sub"></div>
 
     <div class="sheet-list" id="sheet-list">
       <div class="loading-msg">Loading sheets...</div>
     </div>
 
-    <div class="new-sheet-row">
-      <input class="pi" id="new-name" placeholder="New sheet name (e.g. Week 1 Regional)..." onkeydown="if(event.key==='Enter')createSheet()">
+    <div id="admin-create-area" style="display:none;">
+      <div class="new-sheet-row">
+        <input class="pi" id="new-name" placeholder="New sheet name (e.g. Week 1 Regional)..." onkeydown="if(event.key==='Enter')createSheet()">
+      </div>
+      <div class="pw-row">
+        <span class="pw-label">Password (optional):</span>
+        <input class="pi" id="new-pw" type="password" placeholder="Leave blank for no protection" style="flex:1;">
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="pb" onclick="createSheet()" style="flex:1;">+ Create Sheet</button>
+        <button class="pb sec" id="open-btn" onclick="openSheet()" disabled style="flex:1;">Open Selected →</button>
+      </div>
     </div>
-    <div class="pw-row">
-      <span class="pw-label">Password (optional):</span>
-      <input class="pi" id="new-pw" type="password" placeholder="Leave blank for no protection" style="flex:1;">
+    <div id="guest-open-area" style="display:none;">
+      <button class="pb sec" id="open-btn-guest" onclick="openSheet()" disabled style="width:100%;margin-top:0.5rem;">Open Selected →</button>
     </div>
-    <div style="display:flex;gap:8px;">
-      <button class="pb" onclick="createSheet()" style="flex:1;">+ Create Sheet</button>
-      <button class="pb sec" id="open-btn" onclick="openSheet()" disabled style="flex:1;">Open Selected →</button>
+    <div style="margin-top:1rem;display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:11px;color:var(--dim);font-family:'IBM Plex Mono',monospace;" id="picker-role-lbl"></span>
+      <span style="font-size:11px;color:var(--muted);cursor:pointer;font-family:'IBM Plex Mono',monospace;" onclick="logoutToLogin()">← Switch account</span>
     </div>
   </div>
 </div>
@@ -299,6 +331,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
     <div class="hdr-flex"></div>
     <span class="edit-tag" id="edit-tag" style="display:none;">✓ Editing</span>
     <span class="view-tag" id="view-tag" style="display:none;">👁 View Only</span>
+    <span id="hdr-role-tag" style="display:none;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 9px;border-radius:3px;"></span>
     <button class="hdr-btn" id="unlock-btn" style="display:none;" onclick="showPwModal()">🔓 Unlock</button>
     <button class="hdr-btn" onclick="backToPicker()">⬅ Sheets</button>
   </header>
@@ -480,7 +513,57 @@ const sb=supabase.createClient(SB_URL,SB_KEY,{realtime:{params:{eventsPerSecond:
 
 const DIFF=['','Low','Med','High'],VAL=['','Low','Med','High'],PRI=['','Must Do','Consider','Skip'],MS=['','Alpha','Bravo','Charlie','Delta'];
 const SECTIONS=['plan','wg','gr','cpm','strat','specs','proto','eval'];
-let currentSheet=null,canEdit=false,D={},saveTimers={},realtimeSub=null,sheetsRTSub=null,sheets=[];
+let currentSheet=null,canEdit=false,isAdmin=false,D={},saveTimers={},realtimeSub=null,sheetsRTSub=null,sheets=[];
+
+// ── ADMIN PASSWORD (hashed) ──
+// Change this to set your admin password. Current password: Mercs6369
+const ADMIN_PW_HASH=hashPw('Mercs6369');
+
+// ── LOGIN ──
+function showAdminLogin(){
+  document.getElementById('admin-login-form').style.display='block';
+  setTimeout(()=>document.getElementById('admin-pw-inp').focus(),50);
+}
+
+function submitAdminLogin(){
+  const pw=document.getElementById('admin-pw-inp').value;
+  if(hashPw(pw)===ADMIN_PW_HASH){
+    isAdmin=true;
+    document.getElementById('admin-login-err').style.display='none';
+    document.getElementById('admin-pw-inp').value='';
+    enterPicker(true);
+  } else {
+    document.getElementById('admin-login-err').style.display='block';
+    document.getElementById('admin-pw-inp').value='';
+    document.getElementById('admin-pw-inp').focus();
+  }
+}
+
+function loginGuest(){
+  isAdmin=false;
+  enterPicker(false);
+}
+
+function enterPicker(admin){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('picker').style.display='flex';
+  document.getElementById('picker-sub').textContent=admin?'Logged in as Admin · 2026':'Viewing as Guest · 2026';
+  document.getElementById('picker-role-lbl').textContent=admin?'ADMIN':'GUEST';
+  document.getElementById('admin-create-area').style.display=admin?'block':'none';
+  document.getElementById('guest-open-area').style.display=admin?'none':'block';
+  loadSheets();
+  subscribeSheetsList();
+}
+
+function logoutToLogin(){
+  if(realtimeSub){sb.removeChannel(realtimeSub);realtimeSub=null;}
+  if(sheetsRTSub){sb.removeChannel(sheetsRTSub);sheetsRTSub=null;}
+  currentSheet=null;canEdit=false;isAdmin=false;D={};
+  document.getElementById('picker').style.display='none';
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('admin-login-form').style.display='none';
+}
 
 // ── HELPERS ──
 function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;if(html!==undefined)e.innerHTML=html;return e;}
@@ -496,14 +579,16 @@ function sel(opts,cur,cb,disabled){
 function inp(v,ph,cb,disabled){
   const i=el('input','finp');i.value=v||'';i.placeholder=ph||'';
   if(disabled)i.disabled=true;
-  i.oninput=()=>{if(!canEdit)return;cb(i.value);};
+  i.addEventListener('blur',()=>{if(!canEdit)return;cb(i.value);});
+  i.addEventListener('keydown',e=>{if(e.key==='Enter'){if(!canEdit)return;cb(i.value);i.blur();}});
   return i;
 }
 
 function txt(v,ph,cb,disabled){
   const t=el('textarea','ftxt');t.value=v||'';t.placeholder=ph||'';
   if(disabled)t.disabled=true;
-  t.oninput=()=>{if(!canEdit)return;cb(t.value);};
+  // textarea: save on blur only (enter adds newline naturally)
+  t.addEventListener('blur',()=>{if(!canEdit)return;cb(t.value);});
   return t;
 }
 
@@ -530,26 +615,53 @@ function renderSheetList(){
   const list=document.getElementById('sheet-list');
   list.innerHTML='';
   if(!sheets.length){
-    const d=el('div','no-sheets');d.textContent='No sheets yet. Create one below!';list.appendChild(d);return;
+    const d=el('div','no-sheets');d.textContent=isAdmin?'No sheets yet. Create one below!':'No sheets available.';list.appendChild(d);return;
   }
   sheets.forEach(sheet=>{
     const item=el('div','sheet-item'+(currentSheet?.id===sheet.id?' active':''));
-    const name=el('div','sheet-name');name.textContent=sheet.name;
-    const meta=el('div','sheet-meta');meta.textContent=new Date(sheet.created_at).toLocaleDateString();
-    item.appendChild(name);
+
+    if(isAdmin){
+      // Editable name for admins
+      const nameInp=document.createElement('input');
+      nameInp.className='sheet-name-inp';
+      nameInp.value=sheet.name;
+      nameInp.style.cssText='flex:1;background:transparent;border:none;color:var(--text);font-size:14px;font-weight:500;font-family:"Barlow",sans-serif;outline:none;min-width:0;';
+      nameInp.onclick=e=>e.stopPropagation();
+      nameInp.addEventListener('blur',async()=>{
+        const newName=nameInp.value.trim();
+        if(!newName||newName===sheet.name)return;
+        await sb.from('sheets').update({name:newName}).eq('id',sheet.id);
+        sheet.name=newName;
+        if(currentSheet?.id===sheet.id){currentSheet.name=newName;document.getElementById('sheet-pill').textContent=newName;}
+      });
+      nameInp.addEventListener('keydown',e=>{if(e.key==='Enter')nameInp.blur();});
+      item.appendChild(nameInp);
+    } else {
+      const name=el('div','sheet-name');name.textContent=sheet.name;item.appendChild(name);
+    }
+
     if(sheet.is_protected){const lock=el('span','lock-icon');lock.textContent='🔒';item.appendChild(lock);}
-    item.appendChild(meta);
-    const delBtn=el('button','sheet-del');delBtn.textContent='✕';delBtn.title='Delete sheet';
-    delBtn.onclick=async(e)=>{
-      e.stopPropagation();
-      if(!confirm('Delete "'+sheet.name+'"? This cannot be undone.'))return;
-      const{error}=await sb.from('sheets').delete().eq('id',sheet.id);
-      if(error){alert('Error deleting: '+error.message);return;}
-      if(currentSheet?.id===sheet.id){currentSheet=null;document.getElementById('open-btn').disabled=true;}
-      await loadSheets();
+    const meta=el('div','sheet-meta');meta.textContent=new Date(sheet.created_at).toLocaleDateString();item.appendChild(meta);
+
+    if(isAdmin){
+      const delBtn=el('button','sheet-del');delBtn.textContent='✕';delBtn.title='Delete sheet';
+      delBtn.onclick=async(e)=>{
+        e.stopPropagation();
+        if(!confirm('Delete "'+sheet.name+'"? This cannot be undone.'))return;
+        const{error}=await sb.from('sheets').delete().eq('id',sheet.id);
+        if(error){alert('Error deleting: '+error.message);return;}
+        if(currentSheet?.id===sheet.id){currentSheet=null;}
+        await loadSheets();
+      };
+      item.appendChild(delBtn);
+    }
+
+    item.onclick=()=>{
+      currentSheet=sheet;
+      renderSheetList();
+      const ob=document.getElementById('open-btn')||document.getElementById('open-btn-guest');
+      if(ob)ob.disabled=false;
     };
-    item.appendChild(delBtn);
-    item.onclick=()=>{currentSheet=sheet;renderSheetList();document.getElementById('open-btn').disabled=false;};
     list.appendChild(item);
   });
 }
@@ -574,10 +686,14 @@ async function createSheet(){
 function openSheet(){
   if(!currentSheet)return;
   if(currentSheet.is_protected&&!canEdit){
+    // Admins bypass password on protected sheets
+    if(isAdmin){canEdit=true;launchApp();return;}
     showPwModal();
     return;
   }
-  canEdit=true;
+  // Admins can always edit; guests can only edit unprotected sheets if they enter pw
+  if(isAdmin)canEdit=true;
+  else if(!currentSheet.is_protected)canEdit=true;
   launchApp();
 }
 
@@ -618,6 +734,14 @@ async function launchApp(){
   document.getElementById('app').style.display='block';
   document.getElementById('sheet-pill').textContent=currentSheet.name;
 
+  // Role tag in header
+  const roleTag=document.getElementById('hdr-role-tag');
+  if(isAdmin){
+    roleTag.textContent='ADMIN';roleTag.style.cssText='display:inline;font-family:"IBM Plex Mono",monospace;font-size:11px;padding:3px 9px;border-radius:3px;background:rgba(230,58,46,0.15);border:1px solid var(--accent);color:var(--accent2);';
+  } else {
+    roleTag.textContent='GUEST';roleTag.style.cssText='display:inline;font-family:"IBM Plex Mono",monospace;font-size:11px;padding:3px 9px;border-radius:3px;background:rgba(122,128,153,0.15);border:1px solid var(--muted);color:var(--muted);';
+  }
+
   // Show edit/view status
   if(canEdit){
     document.getElementById('edit-tag').style.display='inline';
@@ -648,7 +772,8 @@ function backToPicker(){
   currentSheet=null;canEdit=false;D={};
   document.getElementById('app').style.display='none';
   document.getElementById('picker').style.display='flex';
-  document.getElementById('open-btn').disabled=true;
+  const ob=document.getElementById('open-btn');if(ob)ob.disabled=true;
+  const obg=document.getElementById('open-btn-guest');if(obg)obg.disabled=true;
   loadSheets();
 }
 
@@ -1261,8 +1386,9 @@ function updateTotals(){
 
 // ── INIT ──
 window.addEventListener('error',e=>console.error('App error:',e.message,e.lineno));
-loadSheets();
-subscribeSheetsList();
+// Show login screen on load — user must choose guest or admin
+document.getElementById('login-screen').style.display='flex';
+document.getElementById('picker').style.display='none';
 
 // ── FIELD SIMULATOR ──
 (function(){
